@@ -1,0 +1,15 @@
+name: tote
+
+# All dimensions are FINISHED bag dimensions, in millimeters.
+bag:
+  width: 300
+  height: 250
+  depth: 100
+
+construction:
+  seam_allowance: 10
+
+handles:
+  length: 600
+  width: 30
+  inset: 60
