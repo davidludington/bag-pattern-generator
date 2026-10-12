@@ -7,7 +7,7 @@ bag:
   depth: 100
 
 construction:
-  seam_allowance: 10
+  seam_allowance: 0
 
 handles:
   length: 600

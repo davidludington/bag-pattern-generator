@@ -15,6 +15,7 @@ FOLD = "fold"
 class PatternPiece:
     """One physical pattern piece.
 
+    id     - stable identifier used by exporters and UIs ("front", "handle-1", ...)
     cut    - the cut outline as a polygon (finished shape outset by seam allowance)
     stitch - stitch lines (the finished seam lines), drawn dashed
     fold   - fold lines, drawn dotted
@@ -22,6 +23,7 @@ class PatternPiece:
     grain  - grainline: LineString whose end point is the arrow tip
     """
 
+    id: str
     name: str
     cut: Polygon
     finished_size: tuple[float, float]

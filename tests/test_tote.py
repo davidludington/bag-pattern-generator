@@ -2,7 +2,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-from exporters.svg import _arrange, export_svg
+from exporters.layout import LABEL_H, arrange
+from exporters.svg import export_svg
 from generators.tote import generate
 from model.bag import Bag
 
@@ -120,12 +121,12 @@ def test_config_validation():
 # --- layout ----------------------------------------------------------------
 
 def test_pieces_do_not_overlap_on_the_sheet():
-    placements, content_w, content_h = _arrange(generate(example_bag()).pieces)
+    placements, content_w, content_h = arrange(generate(example_bag()).pieces)
     boxes = []
     for piece, tx, ty in placements:
         minx, miny, maxx, maxy = piece.cut.bounds
         # include the label strip reserved under each piece
-        boxes.append((tx + minx, ty + miny, tx + maxx, ty + maxy + 19))
+        boxes.append((tx + minx, ty + miny, tx + maxx, ty + maxy + LABEL_H))
     for i, a in enumerate(boxes):
         for b in boxes[i + 1:]:
             overlap = a[0] < b[2] and b[0] < a[2] and a[1] < b[3] and b[1] < a[3]

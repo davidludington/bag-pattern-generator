@@ -1,11 +1,17 @@
 # bag-patterns
 
-A small local Python tool that generates printable sewing/leatherworking bag
+A small local tool that generates printable sewing/leatherworking bag
 patterns from a dimension config. Right now it supports one bag type: a
 rectangular gusseted tote (front, back, continuous gusset, two handles).
 
 The pattern is a semantic model (pieces, stitch lines, notches, grainlines)
 that is exported to SVG — the SVG is never the source of truth.
+
+Two ways to drive it:
+
+- **CLI** — YAML in, SVG out.
+- **Bag Pattern Studio** — a local React UI (edit parameters, live pattern
+  preview, save/open projects, export/print).
 
 ## Install
 
@@ -26,6 +32,42 @@ Run the tests:
 ```bash
 .venv/bin/python -m pytest
 ```
+
+## Bag Pattern Studio (browser UI)
+
+Development — two terminals:
+
+```bash
+# terminal 1: the pattern engine (Python API on :8000)
+.venv/bin/python api.py
+
+# terminal 2: the UI (Vite dev server on :5173, /api proxied to :8000)
+cd web && npm install && npm run dev
+# open http://localhost:5173
+```
+
+One process — build the UI once, Python serves it:
+
+```bash
+cd web && npm install && npm run build
+.venv/bin/python api.py   # open http://localhost:8000
+```
+
+UI capabilities (v1): edit all parameters with live regeneration, wheel-zoom /
+drag-pan canvas, click a piece to select it (contextual inspector), undo/redo
+(Ctrl+Z / Ctrl+Shift+Z), Save/Open `.bag.json` project files, Export SVG,
+Print/PDF (browser print at 100%).
+
+How it fits together — the UI edits one `BagSpec` object; it never computes
+geometry itself:
+
+```
+BagSpec ──POST /api/pattern──▶ Python engine ──▶ pattern model JSON ──▶ React SVG canvas
+       ──POST /api/export.svg─▶ Python engine ──▶ canonical sheet SVG (export/print/CLI)
+```
+
+The pattern model (pieces with ids, paths, notches, sheet transforms) is the
+API contract; the Python SVG exporter stays the canonical printable artifact.
 
 ## Configuration
 
@@ -51,7 +93,7 @@ handles:
 
 ### What the generated dimensions mean
 
-For the example config the pieces cut out to:
+For a 300 × 250 × 100 bag with a **10 mm** seam allowance, the pieces cut to:
 
 | Piece  | Finished      | Cut (incl. 10mm seam allowance) |
 |--------|---------------|----------------------------------|
@@ -59,6 +101,9 @@ For the example config the pieces cut out to:
 | Back   | 300 × 250     | 320 × 270                        |
 | Gusset | 800 × 100     | 820 × 120                        |
 | Handle | 600 × 30 (×2) | 620 × 50 (×2)                    |
+
+(The shipped `examples/tote.yaml` currently uses `seam_allowance: 0`, where
+cut equals finished.)
 
 Gusset length = `2 × height + width` (up the left side, across the bottom, up
 the right side). Every piece: **cut = finished + seam allowance on every
@@ -101,7 +146,10 @@ edge**, so every seam totals `2 × seam_allowance`.
 ## Not implemented (on purpose)
 
 Photo/AI reverse engineering, unit conversion (inches), multiple bag types,
-pocket, pattern nesting/optimization, DXF export, page tiling, web UI.
+pocket, pattern nesting/optimization, DXF export, page tiling, construction
+view, measurement overlays, direct manipulation of pieces (dragging handles
+etc.). The UI operates on semantic parameters only — the engine owns all
+geometry.
 
 The intended loop is: **software → physical prototype → observation →
 software.**

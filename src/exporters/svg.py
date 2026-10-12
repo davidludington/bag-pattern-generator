@@ -12,6 +12,7 @@ from xml.sax.saxutils import escape
 
 from geometry.operations import arrow_tip
 from model.pattern import Pattern, PatternPiece
+from exporters.layout import MARGIN, arrange
 
 # visual conventions
 STYLE = {
@@ -24,16 +25,12 @@ STYLE = {
 }
 FONT = 'font-family="Helvetica, Arial, sans-serif"'
 
-GAP = 15.0  # gap between pieces, mm
-MARGIN = 20.0  # sheet margin, mm
-LABEL_H = 19.0  # space reserved under each piece for its label, mm
 FOOTER_H = 42.0  # legend + scale bar strip, mm
 MIN_CONTENT_W = 620.0  # keeps the footer row on one line
-MAX_ROW_W = 1500.0
 
 
-def export_svg(pattern: Pattern, path: str | Path) -> None:
-    placements, content_w, content_h = _arrange(pattern.pieces)
+def render_svg(pattern: Pattern) -> str:
+    placements, content_w, content_h = arrange(pattern.pieces)
     width = max(content_w, MIN_CONTENT_W) + 2 * MARGIN
     height = MARGIN + content_h + 10.0 + FOOTER_H + MARGIN
     footer_y = MARGIN + content_h + 10.0
@@ -47,41 +44,20 @@ def export_svg(pattern: Pattern, path: str | Path) -> None:
         'fill="none" stroke="#bbbbbb" stroke-width="0.5"/>',
     ]
     for piece, tx, ty in placements:
-        out.append(f'<g transform="translate({tx:.2f} {ty:.2f})">')
+        out.append(
+            f'<g data-piece="{piece.id}" transform="translate({tx:.2f} {ty:.2f})">'
+        )
         out.extend(_piece_svg(piece))
         out.append("</g>")
     out.extend(_footer_svg(pattern, width, footer_y))
     out.append("</svg>")
+    return "\n".join(out) + "\n"
 
+
+def export_svg(pattern: Pattern, path: str | Path) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("\n".join(out) + "\n", encoding="utf-8")
-
-
-def _arrange(pieces: list[PatternPiece]) -> tuple[list[tuple[PatternPiece, float, float]], float, float]:
-    """Greedy shelf packing. Returns (piece, tx, ty) translating each cut box to (0,0)."""
-    items = []
-    for p in pieces:
-        minx, miny, maxx, maxy = p.cut.bounds
-        items.append((p, maxx - minx, maxy - miny))
-    items.sort(key=lambda it: -it[2])  # tallest first
-
-    placements = []
-    x = y = 0.0
-    row_h = 0.0
-    content_w = 0.0
-    for piece, w, h in items:
-        box_h = h + LABEL_H
-        if x > 0 and x + w > MAX_ROW_W:
-            y += row_h + GAP
-            x, row_h = 0.0, 0.0
-        minx, miny, _, _ = piece.cut.bounds
-        placements.append((piece, MARGIN + x - minx, MARGIN + y - miny))
-        x += w + GAP
-        row_h = max(row_h, box_h)
-        content_w = max(content_w, x - GAP)
-    content_h = y + row_h
-    return placements, content_w, content_h
+    path.write_text(render_svg(pattern), encoding="utf-8")
 
 
 def _path(coords, close: bool = False) -> str:

@@ -57,13 +57,18 @@ class Bag:
             "width",
             "height",
             "depth",
-            "seam_allowance",
             "handle_length",
             "handle_width",
         )
         for field in positive:
             if getattr(self, field) <= 0:
-                raise ValueError(f"{field} must be positive, got {getattr(self, field)}")
+                raise ValueError(
+                    f"{field} must be positive, got {getattr(self, field)}"
+                )
+        if self.seam_allowance < 0:
+            raise ValueError(
+                f"seam_allowance must be >= 0, got {self.seam_allowance}"
+            )
         if self.handle_inset < 0:
             raise ValueError("handle_inset must be >= 0")
         if 2 * self.handle_inset >= self.width:

@@ -1,0 +1,356 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  font-family: system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  color: #1a1d21;
+  background: #e9ecef;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ---- toolbar ---- */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 14px;
+  background: #22262b;
+  color: #f2f4f6;
+  flex: none;
+}
+
+.app-title {
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.2px;
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toolbar-sep {
+  width: 1px;
+  height: 20px;
+  background: #454b52;
+  margin: 0 4px;
+}
+
+.toolbar button {
+  font: inherit;
+  font-size: 13px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 1px solid #4d545c;
+  background: #31363c;
+  color: #eef1f4;
+  cursor: pointer;
+}
+
+.toolbar button:hover:not(:disabled) {
+  background: #3d434a;
+}
+
+.toolbar button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.error-banner {
+  background: #fdecea;
+  color: #8a1f16;
+  border-bottom: 1px solid #f3c1bb;
+  padding: 6px 14px;
+  font-size: 13px;
+  flex: none;
+}
+
+/* ---- three-panel layout ---- */
+
+.layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr) 250px;
+  gap: 10px;
+  padding: 10px;
+  min-height: 0;
+}
+
+.panel {
+  background: #ffffff;
+  border: 1px solid #d4d9de;
+  border-radius: 8px;
+  padding: 14px;
+  overflow-y: auto;
+}
+
+.panel h2 {
+  margin: 0 0 12px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #5a6470;
+}
+
+.panel section {
+  margin-bottom: 18px;
+}
+
+.panel h3 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1a1d21;
+  border-bottom: 1px solid #e6eaee;
+  padding-bottom: 4px;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.field-label {
+  font-size: 13px;
+  color: #3c444c;
+}
+
+.field-input {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.field-input input {
+  width: 72px;
+  font: inherit;
+  font-size: 13px;
+  padding: 4px 6px;
+  border: 1px solid #c6ccd2;
+  border-radius: 5px;
+  text-align: right;
+}
+
+.field-input input:focus {
+  outline: 2px solid #8db8f0;
+  border-color: #5b93d6;
+}
+
+.field-unit {
+  font-size: 12px;
+  color: #7a828b;
+  width: 20px;
+}
+
+.static-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 8px;
+}
+
+.static-value {
+  font-size: 13px;
+  color: #1a1d21;
+}
+
+.hint {
+  font-size: 12px;
+  color: #6b737c;
+  line-height: 1.45;
+  margin: 10px 0 0;
+}
+
+.link-button {
+  font: inherit;
+  font-size: 12px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: #2f6fd0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
+.piece-facts {
+  margin: 0 0 10px;
+}
+
+.piece-facts div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.piece-facts dt {
+  font-size: 13px;
+  color: #5a6470;
+}
+
+.piece-facts dd {
+  margin: 0;
+  font-size: 13px;
+}
+
+/* ---- canvas ---- */
+
+.canvas-wrap {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  background: #dfe3e7;
+  border: 1px solid #d4d9de;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.canvas-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.canvas-status {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5a6470;
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.canvas-fit {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font: inherit;
+  font-size: 12px;
+  padding: 5px 12px;
+  border: 1px solid #b9c0c7;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #1a1d21;
+  cursor: pointer;
+}
+
+.canvas-fit:hover {
+  background: #f2f5f8;
+}
+
+.sheet {
+  fill: #ffffff;
+  stroke: #b9c0c7;
+  stroke-width: 0.5;
+}
+
+/* pattern line conventions — mirror src/exporters/svg.py */
+.piece {
+  cursor: pointer;
+}
+
+.piece .cut {
+  fill: #ffffff;
+  stroke: #000000;
+  stroke-width: 0.6;
+}
+
+.piece .stitch {
+  fill: none;
+  stroke: #cc0000;
+  stroke-width: 0.45;
+  stroke-dasharray: 5 2.5;
+}
+
+.piece .fold {
+  fill: none;
+  stroke: #0055cc;
+  stroke-width: 0.45;
+  stroke-dasharray: 1 2;
+  stroke-linecap: round;
+}
+
+.piece .notch {
+  fill: none;
+  stroke: #000000;
+  stroke-width: 0.7;
+}
+
+.piece .grain {
+  fill: none;
+  stroke: #000000;
+  stroke-width: 0.45;
+}
+
+.piece .grain-head {
+  fill: #000000;
+  stroke: none;
+}
+
+.piece text {
+  font-family: Helvetica, Arial, sans-serif;
+  fill: #1a1d21;
+  user-select: none;
+}
+
+.piece .piece-name {
+  font-size: 6px;
+  font-weight: 600;
+}
+
+.piece .piece-dims {
+  font-size: 4px;
+}
+
+.piece .piece-notes {
+  font-size: 3.5px;
+  fill: #555555;
+}
+
+.piece:hover .cut {
+  fill: #eaf2fe;
+  stroke: #1668dc;
+  stroke-width: 1;
+}
+
+.piece.selected .cut {
+  fill: #dbe9ff;
+  stroke: #1668dc;
+  stroke-width: 1.5;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(300px, 1fr) auto;
+  }
+}

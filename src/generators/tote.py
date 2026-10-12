@@ -23,16 +23,16 @@ NOTCH = 4.0  # match-mark tick length, mm
 
 def generate(bag: Bag) -> Pattern:
     pieces = [
-        _panel("Front", bag),
-        _panel("Back", bag),
+        _panel("front", "Front", bag),
+        _panel("back", "Back", bag),
         _gusset(bag),
-        _handle("Handle 1", bag),
-        _handle("Handle 2", bag),
+        _handle("handle-1", "Handle 1", bag),
+        _handle("handle-2", "Handle 2", bag),
     ]
     return Pattern(name=bag.name, pieces=pieces)
 
 
-def _panel(name: str, bag: Bag) -> PatternPiece:
+def _panel(piece_id: str, name: str, bag: Bag) -> PatternPiece:
     sa = bag.seam_allowance
     w, h = bag.width, bag.height
     finished = rect(w, h)
@@ -50,6 +50,7 @@ def _panel(name: str, bag: Bag) -> PatternPiece:
     ]
     grain = LineString([(w / 2, sa + 15), (w / 2, h + sa - 15)])
     return PatternPiece(
+        id=piece_id,
         name=name,
         cut=cut,
         finished_size=(w, h),
@@ -80,6 +81,7 @@ def _gusset(bag: Bag) -> PatternPiece:
     ]
     grain = LineString([(sa + 15, bag.depth / 2), (length + sa - 15, bag.depth / 2)])
     return PatternPiece(
+        id="gusset",
         name="Gusset",
         cut=cut,
         finished_size=(length, bag.depth),
@@ -93,13 +95,14 @@ def _gusset(bag: Bag) -> PatternPiece:
     )
 
 
-def _handle(name: str, bag: Bag) -> PatternPiece:
+def _handle(piece_id: str, name: str, bag: Bag) -> PatternPiece:
     sa = bag.seam_allowance
     w, h = bag.handle_length, bag.handle_width
     finished = rect(w, h)
     cut = seam_outline(finished, sa)
     grain = LineString([(sa + 15, h / 2), (w + sa - 15, h / 2)])
     return PatternPiece(
+        id=piece_id,
         name=name,
         cut=cut,
         finished_size=(w, h),
