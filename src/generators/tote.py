@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from shapely.geometry import LineString
 
+from generators.base import Field, GeneratorSpec, Section
 from geometry.operations import notch, rect, seam_outline, stitch_line
 from model.bag import Bag
 from model.pattern import Pattern, PatternPiece
@@ -110,3 +111,34 @@ def _handle(piece_id: str, name: str, bag: Bag) -> PatternPiece:
         grain=grain,
         notes="fold all four edges under at the lines; raw edges meet at the back",
     )
+
+
+SPEC = GeneratorSpec(
+    type="tote",
+    label="Rectangular gusseted tote",
+    sections=(
+        Section(
+            "Bag",
+            (
+                Field("width", "Width", 300, affects=("front", "back", "gusset")),
+                Field("height", "Height", 250, affects=("front", "back", "gusset")),
+                Field("depth", "Depth", 100, affects=("gusset",)),
+            ),
+        ),
+        Section(
+            "Handles",
+            (
+                Field("handle_length", "Length", 600, affects=("handle-1", "handle-2")),
+                Field("handle_width", "Width", 30, affects=("handle-1", "handle-2")),
+                Field(
+                    "handle_inset",
+                    "Placement (inset)",
+                    60,
+                    min=0,
+                    affects=("handle-1", "handle-2"),
+                ),
+            ),
+        ),
+    ),
+    generate=lambda params: generate(Bag.from_params(params)),
+)
