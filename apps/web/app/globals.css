@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: #f5f5f4;
+  color: #1c1917;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+}
+
+.pattern-cut {
+  fill: #ffffff;
+  stroke: #1c1917;
+  stroke-width: 0.6;
+}
+
+.pattern-sew {
+  fill: none;
+  stroke: #b91c1c;
+  stroke-width: 0.45;
+  stroke-dasharray: 5 2.5;
+  pointer-events: none;
+}
+
+.pattern-fold {
+  fill: none;
+  stroke: #1d4ed8;
+  stroke-width: 0.45;
+  stroke-dasharray: 1 2;
+  pointer-events: none;
+}
+
+.pattern-notch {
+  fill: none;
+  stroke: #1c1917;
+  stroke-width: 0.7;
+  pointer-events: none;
+}
+
+/* Leather: skive (thin) zones, reinforcement zones, and hardware punch marks. */
+.pattern-skive {
+  fill: #f59e0b;
+  fill-opacity: 0.22;
+  stroke: #b45309;
+  stroke-width: 0.25;
+  stroke-dasharray: 1.5 1;
+  pointer-events: none;
+}
+
+.pattern-reinforce {
+  fill: #2563eb;
+  fill-opacity: 0.12;
+  stroke: #1d4ed8;
+  stroke-width: 0.3;
+  stroke-dasharray: 3 1.5;
+  pointer-events: none;
+}
+
+.pattern-punch {
+  fill: none;
+  stroke: #1c1917;
+  stroke-width: 0.35;
+  pointer-events: none;
+}
+
+.pattern-grain {
+  fill: none;
+  stroke: #1c1917;
+  stroke-width: 0.45;
+  pointer-events: none;
+}
+
+.pattern-grain-head {
+  fill: #1c1917;
+  pointer-events: none;
+}
+
+.pattern-label {
+  fill: #1c1917;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 6px;
+  font-weight: 600;
+  pointer-events: none;
+  user-select: none;
+}
+
+.pattern-label-dims {
+  fill: #57534e;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 4px;
+  pointer-events: none;
+  user-select: none;
+}
+
+g[data-piece-id]:hover .pattern-cut {
+  fill: #fafaf9;
+  stroke: #2563eb;
+}
+
+g[data-selected="true"] .pattern-cut {
+  fill: #eff6ff;
+  stroke: #2563eb;
+  stroke-width: 1.1;
+}

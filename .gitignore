@@ -4,5 +4,18 @@ __pycache__/
 output/
 *.pyc
 .pytest_cache/
-web/node_modules/
-web/dist/
+.env
+.env*.local
+.DS_Store
+
+# node
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+apps/web/.next/
+
+# test artifacts
+test-results/
+playwright-report/
+playwright/.cache/

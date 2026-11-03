@@ -1,11 +1,8 @@
-"""Bag domain model: finished dimensions loaded from YAML config."""
+"""Tote parameters: finished dimensions in millimeters."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
-
-import yaml
 
 
 @dataclass(frozen=True)
@@ -25,32 +22,18 @@ class Bag:
         self.validate()
 
     @classmethod
-    def from_dict(cls, data: dict) -> "Bag":
-        bag = data.get("bag") or {}
-        construction = data.get("construction") or {}
-        handles = data.get("handles") or {}
-        for key in ("width", "height", "depth"):
-            if key not in bag:
-                raise ValueError(f"config missing bag.{key}")
-        result = cls(
-            width=float(bag["width"]),
-            height=float(bag["height"]),
-            depth=float(bag["depth"]),
-            seam_allowance=float(construction.get("seam_allowance", 10.0)),
-            handle_length=float(handles.get("length", 600.0)),
-            handle_width=float(handles.get("width", 30.0)),
-            handle_inset=float(handles.get("inset", 60.0)),
-            name=str(data.get("name") or "tote"),
+    def from_params(cls, params: dict) -> "Bag":
+        """Build from a flat resolved parameter dict (see generators.base)."""
+        return cls(
+            width=float(params["width"]),
+            height=float(params["height"]),
+            depth=float(params["depth"]),
+            seam_allowance=float(params.get("seam_allowance", 10.0)),
+            handle_length=float(params.get("handle_length", 600.0)),
+            handle_width=float(params.get("handle_width", 30.0)),
+            handle_inset=float(params.get("handle_inset", 60.0)),
+            name=str(params.get("name") or "tote"),
         )
-        return result
-
-    @classmethod
-    def from_yaml(cls, path: str | Path) -> "Bag":
-        with open(path, encoding="utf-8") as f:
-            data = yaml.safe_load(f)
-        if not isinstance(data, dict):
-            raise ValueError(f"{path}: expected a YAML mapping")
-        return cls.from_dict(data)
 
     def validate(self) -> None:
         positive = (
