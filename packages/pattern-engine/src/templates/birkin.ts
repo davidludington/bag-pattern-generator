@@ -100,7 +100,7 @@ export function generateBirkinPattern(config: BirkinConfiguration): Pattern {
           bottom: { kind: "sew", seamId: "bottom-back" },
           left: { kind: "sew", seamId: "left-back" },
         },
-        rules.leather ? [...handleAnchors(config), ...sangleAnchors(config)] : [],
+        rules.leather ? [...handleAnchors(config),] : [],
       ),
       panel(
         "base",
@@ -130,8 +130,8 @@ export function generateBirkinPattern(config: BirkinConfiguration): Pattern {
         left: { kind: "sew", seamId: "right-front" },
       }),
       flap(config, rules),
-      sangle("strap-1", "Strap 1", config, rules),
-      sangle("strap-2", "Strap 2", config, rules),
+      // sangle("strap-1", "Strap 1", config, rules),
+      // sangle("strap-2", "Strap 2", config, rules),
       wrap("handle-1", "Handle 1", config, rules),
       core("handle-1-core", "Handle 1 core", config, rules),
       wrap("handle-2", "Handle 2", config, rules),
@@ -152,18 +152,18 @@ function handleAnchors(config: BirkinConfiguration): Marking[] {
 }
 
 /** Sangles start at the back top edge. */
-function sangleAnchors(config: BirkinConfiguration): Marking[] {
-  const centre = config.strapInsetMm + config.strapWidthMm / 2;
-  return [centre, config.widthMm - centre].map((x) =>
-    reinforceZone(
-      x,
-      0,
-      config.strapWidthMm + 10,
-      HARDWARE.anchor.height,
-      "reinforce sangle anchor",
-    ),
-  );
-}
+// function sangleAnchors(config: BirkinConfiguration): Marking[] {
+//   const centre = config.strapInsetMm + config.strapWidthMm / 2;
+//   return [centre, config.widthMm - centre].map((x) =>
+//     reinforceZone(
+//       x,
+//       0,
+//       config.strapWidthMm + 10,
+//       HARDWARE.anchor.height,
+//       "reinforce sangle anchor",
+//     ),
+//   );
+// }
 
 /** The turn-lock base sits on the front, just above where the flap tip lands. */
 function turnLockBase(config: BirkinConfiguration): Marking[] {
@@ -262,42 +262,42 @@ function flap(config: BirkinConfiguration, rules: ConstructionRules): PatternPie
   return applyConstruction(piece, "flap", rules);
 }
 
-function sangle(
-  id: string,
-  name: string,
-  config: BirkinConfiguration,
-  rules: ConstructionRules,
-): PatternPiece {
-  const e = rules.allowanceFor("raw");
-  const width = config.strapLengthMm;
-  const height = config.strapWidthMm;
-  return rectPiece({
-    id,
-    name,
-    width,
-    height,
-    material: config.material,
-    component: "strap",
-    rules,
-    edges: {},
-    grainline: "horizontal",
-    extraNotches: [
-      notchForSide("left", width, height, e, undefined, "back top"),
-      notchForSide("right", width, height, e, undefined, "turn-lock"),
-      ...(rules.leather
-        ? [
-            punch(
-              width - HARDWARE.lockAboveTipMm,
-              height / 2,
-              HARDWARE.lockHoleMm,
-              "turn-lock slot",
-            ),
-          ]
-        : []),
-    ],
-    notes: `runs from the back top, over the flap, to the turn-lock; inset ${config.strapInsetMm} mm from the side edge`,
-  });
-}
+// function sangle(
+//   id: string,
+//   name: string,
+//   config: BirkinConfiguration,
+//   rules: ConstructionRules,
+// ): PatternPiece {
+//   const e = rules.allowanceFor("raw");
+//   const width = config.strapLengthMm;
+//   const height = config.strapWidthMm;
+//   return rectPiece({
+//     id,
+//     name,
+//     width,
+//     height,
+//     material: config.material,
+//     component: "strap",
+//     rules,
+//     edges: {},
+//     grainline: "horizontal",
+//     extraNotches: [
+//       notchForSide("left", width, height, e, undefined, "back top"),
+//       notchForSide("right", width, height, e, undefined, "turn-lock"),
+//       ...(rules.leather
+//         ? [
+//           punch(
+//             width - HARDWARE.lockAboveTipMm,
+//             height / 2,
+//             HARDWARE.lockHoleMm,
+//             "turn-lock slot",
+//           ),
+//         ]
+//         : []),
+//     ],
+//     notes: `runs from the back top, over the flap, to the turn-lock; inset ${config.strapInsetMm} mm from the side edge`,
+//   });
+// }
 
 /**
  * The wrap rolls into a tube around the core. Its finished height is the tube
