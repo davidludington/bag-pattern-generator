@@ -1,0 +1,11 @@
+node_modules
+.next
+test-results
+playwright-report
+package-lock.json
+.venv
+venv
+output
+.opencode
+*.md
+examples

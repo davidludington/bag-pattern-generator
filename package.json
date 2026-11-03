@@ -1,0 +1,31 @@
+{
+  "name": "bag-patterns",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w apps/web",
+    "build": "npm run build -w apps/web",
+    "lint": "eslint .",
+    "typecheck": "npm run typecheck -w @bag-patterns/pattern-engine && npm run typecheck -w apps/web",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "npm run test -w @bag-patterns/pattern-engine && npm run test -w apps/web",
+    "test:e2e": "npm run test:e2e -w apps/web",
+    "test:py": ".venv/bin/python -m pytest",
+    "check": "npm run typecheck && npm run lint && npm test"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.4.4",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.9.10",
+    "typescript-eslint": "^8.72.1"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
