@@ -213,8 +213,8 @@ export const bagConfigurationSchema = baseBagConfigurationSchema.superRefine(
           ctx.addIssue({
             code: "custom",
             path: ["flapHeightMm"],
-            message: "Flap height must be shorter than bag height"
-          })
+            message: "Flap height must be shorter than bag height",
+          });
         }
         // if (2 * configuration.strapInsetMm + configuration.strapWidthMm > configuration.widthMm) {
         //   ctx.addIssue({
