@@ -67,6 +67,15 @@ describe("observationToConfiguration", () => {
     expect(assumptions.join("\n")).toMatch(/low confidence/);
   });
 
+  it("says when a dimension the photo lacks keeps its default", () => {
+    const { configuration, assumptions } = observationToConfiguration(
+      observation({ proportions: { width: 4, height: 3.5, depth: 0 } }),
+      { axis: "width", valueMm: 400 },
+    );
+    expect(configuration).toMatchObject({ depthMm: 100 });
+    expect(assumptions.join("\n")).toMatch(/Depth keeps the template default of 100 mm/);
+  });
+
   it("clamps out-of-range values and says so", () => {
     const { configuration, assumptions } = observationToConfiguration(
       observation({ proportions: { width: 10, height: 1, depth: 0.1 } }),

@@ -17,7 +17,7 @@ import {
   SHEET_LAYOUT,
   splitMarkings,
 } from "@/lib/pattern-draw";
-import { emptyTransform, type PieceTransform } from "@/lib/projects";
+import { emptyTransform, resolveTransforms, type PieceTransform } from "@/lib/projects";
 import { cn } from "@/lib/utils";
 
 type Camera = { x: number; y: number; w: number; h: number };
@@ -68,6 +68,7 @@ export function PatternCanvas({
     () => (pattern ? layoutPieces(pattern.pieces, SHEET_LAYOUT) : null),
     [pattern],
   );
+  const placed = pattern ? resolveTransforms(pattern, transforms) : {};
   const editable = mode === "edit";
 
   // Keep the user's zoom and pan while they edit dimensions; start fresh when
@@ -168,7 +169,11 @@ export function PatternCanvas({
     const dy = (event.clientY - current.lastY) / scale;
 
     if (current.mode === "pan") {
-      setCamera((value) => (value ? { ...value, x: value.x - dx, y: value.y - dy } : value));
+      // the first pan leaves auto-fit, starting from the view the user sees
+      setCamera((value) => {
+        const base = value ?? activeCamera;
+        return { ...base, x: base.x - dx, y: base.y - dy };
+      });
     } else if (current.pieceId) {
       const pieceId = current.pieceId;
       setDragOffset((offset) =>
@@ -192,7 +197,7 @@ export function PatternCanvas({
       onSelect?.(current.pieceId);
     }
     if (dragOffset && onTransformChange) {
-      const existing = transforms[dragOffset.pieceId] ?? emptyTransform();
+      const existing = placed[dragOffset.pieceId] ?? emptyTransform();
       onTransformChange(dragOffset.pieceId, {
         ...existing,
         x: existing.x + dragOffset.dx,
@@ -203,7 +208,7 @@ export function PatternCanvas({
   };
 
   const transformOf = (pieceId: string): PieceTransform => {
-    const base = transforms[pieceId] ?? emptyTransform();
+    const base = placed[pieceId] ?? emptyTransform();
     if (dragOffset?.pieceId !== pieceId) return base;
     return { ...base, x: base.x + dragOffset.dx, y: base.y + dragOffset.dy };
   };
@@ -247,8 +252,6 @@ export function PatternCanvas({
               <PieceView
                 key={placement.piece.id}
                 piece={placement.piece}
-                x={placement.x}
-                y={placement.y}
                 transform={transformOf(placement.piece.id)}
                 selected={placement.piece.id === selectedId}
               />
@@ -295,13 +298,11 @@ export function PatternCanvas({
 
 interface PieceViewProps {
   piece: PatternPiece;
-  x: number;
-  y: number;
   transform: PieceTransform;
   selected: boolean;
 }
 
-function PieceView({ piece, x, y, transform, selected }: PieceViewProps) {
+function PieceView({ piece, transform, selected }: PieceViewProps) {
   const bounds = boundsOf(piece.cutPath);
   const centerX = bounds.minX + bounds.width / 2;
   const centerY = bounds.minY + bounds.height / 2;
@@ -312,7 +313,7 @@ function PieceView({ piece, x, y, transform, selected }: PieceViewProps) {
       data-piece-id={piece.id}
       data-selected={selected ? "true" : "false"}
       data-testid={`piece-${piece.id}`}
-      transform={`translate(${x + transform.x} ${y + transform.y}) rotate(${transform.rotation} ${centerX} ${centerY})`}
+      transform={`translate(${transform.x} ${transform.y}) rotate(${transform.rotation} ${centerX} ${centerY})`}
       className="cursor-pointer"
     >
       <path className="pattern-cut" d={pathD(piece.cutPath, true)} />

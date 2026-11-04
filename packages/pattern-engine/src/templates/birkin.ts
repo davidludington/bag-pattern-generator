@@ -17,7 +17,7 @@ import {
 import type { ConfigurationFor } from "../schema";
 import type { Component, Marking, Pattern, PatternPiece } from "../types";
 import { assertValidPattern } from "../validation";
-import { rectPiece } from "./shared";
+import { BOX_BODY_EDGES, rectPiece } from "./shared";
 
 type BirkinConfiguration = ConfigurationFor<"birkin">;
 
@@ -32,10 +32,8 @@ const HARDWARE = {
 };
 
 /**
- * Five-panel box body (front, back, base, two gussets) plus a flap sewn to the
- * back top edge. Seam pairs follow the tote: front/back sides to the gusset
- * verticals, front/back bottoms to the base long edges, gusset bottoms to the
- * base short edges, and the back top to the flap.
+ * Five-panel box body (front, back, base, two gussets; seams follow
+ * BOX_BODY_EDGES) plus a flap sewn to the back top edge.
  *
  * In leather the flap gains a wrap allowance for bending over the front panel,
  * the rolled handle is shortened to its neutral axis, and hardware positions
@@ -80,12 +78,7 @@ export function generateBirkinPattern(config: BirkinConfiguration): Pattern {
         width,
         height,
         "body",
-        {
-          top: { kind: "raw" },
-          right: { kind: "sew", seamId: "right-front" },
-          bottom: { kind: "sew", seamId: "bottom-front" },
-          left: { kind: "sew", seamId: "left-front" },
-        },
+        BOX_BODY_EDGES.front,
         rules.leather ? [...handleAnchors(config), ...turnLockBase(config)] : [],
       ),
       panel(
@@ -94,41 +87,12 @@ export function generateBirkinPattern(config: BirkinConfiguration): Pattern {
         width,
         height,
         "body",
-        {
-          top: { kind: "sew", seamId: "back-flap" },
-          right: { kind: "sew", seamId: "right-back" },
-          bottom: { kind: "sew", seamId: "bottom-back" },
-          left: { kind: "sew", seamId: "left-back" },
-        },
-        rules.leather ? [...handleAnchors(config),] : [],
+        { ...BOX_BODY_EDGES.back, top: { kind: "sew", seamId: "back-flap" } },
+        rules.leather ? [...handleAnchors(config)] : [],
       ),
-      panel(
-        "base",
-        "Base",
-        width,
-        depth,
-        "base",
-        {
-          top: { kind: "sew", seamId: "bottom-front" },
-          right: { kind: "sew", seamId: "bottom-right" },
-          bottom: { kind: "sew", seamId: "bottom-back" },
-          left: { kind: "sew", seamId: "bottom-left" },
-        },
-        [],
-        "horizontal",
-      ),
-      panel("gusset-left", "Gusset left", depth, height, "gusset", {
-        top: { kind: "raw" },
-        right: { kind: "sew", seamId: "left-back" },
-        bottom: { kind: "sew", seamId: "bottom-left" },
-        left: { kind: "sew", seamId: "left-front" },
-      }),
-      panel("gusset-right", "Gusset right", depth, height, "gusset", {
-        top: { kind: "raw" },
-        right: { kind: "sew", seamId: "right-back" },
-        bottom: { kind: "sew", seamId: "bottom-right" },
-        left: { kind: "sew", seamId: "right-front" },
-      }),
+      panel("base", "Base", width, depth, "base", BOX_BODY_EDGES.base, [], "horizontal"),
+      panel("gusset-left", "Gusset left", depth, height, "gusset", BOX_BODY_EDGES.gussetLeft),
+      panel("gusset-right", "Gusset right", depth, height, "gusset", BOX_BODY_EDGES.gussetRight),
       flap(config, rules),
       // sangle("strap-1", "Strap 1", config, rules),
       // sangle("strap-2", "Strap 2", config, rules),

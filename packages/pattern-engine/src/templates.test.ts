@@ -172,6 +172,13 @@ describe("drawstring", () => {
     expect(front.finishedSize).toEqual({ width: 200, height: 250 });
     expect(cutSize(front)).toEqual({ width: 220, height: 295 });
     expect(front.stitchPaths[0]?.points[0]?.y).toBe(50);
+    // the side and bottom seams are drawn too, not only the casing line
+    expect(front.stitchPaths[1]?.points).toEqual([
+      { x: 0, y: 0 },
+      { x: 0, y: 275 },
+      { x: 200, y: 275 },
+      { x: 200, y: 0 },
+    ]);
     expect(front.foldPaths[0]?.points[0]?.y).toBe(25);
     expect(validatePattern(pattern)).toEqual([]);
     expectNoOverlap(pattern);
@@ -213,6 +220,14 @@ describe("birkin", () => {
       bagConfigurationSchema.safeParse(birkinConfig({ strapInsetMm: 200, strapWidthMm: 30 }))
         .success,
     ).toBe(false);
+  });
+
+  it("rejects a flap that hangs below the bag", () => {
+    const result = bagConfigurationSchema.safeParse(
+      birkinConfig({ heightMm: 200, flapHeightMm: 300 }),
+    );
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.path).toEqual(["flapHeightMm"]);
   });
 });
 

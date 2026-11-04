@@ -1,6 +1,5 @@
 import {
   boundsOf,
-  layoutPieces,
   rotatePoint,
   type Pattern,
   type PatternPiece,
@@ -18,7 +17,7 @@ import {
   splitMarkings,
   wrapText,
 } from "./pattern-draw";
-import { emptyTransform, type PieceTransform } from "./projects";
+import { emptyTransform, resolveTransforms, type PieceTransform } from "./projects";
 
 const FOOTER_HEIGHT = 50;
 const MARGIN = 20;
@@ -149,13 +148,14 @@ interface PlacedPiece {
 }
 
 /**
- * Place pieces with the shared layout plus any workspace moves and rotations,
- * and measure each piece (with its label block) on the sheet.
+ * Place pieces where the workspace has them (the shared layout for pieces the
+ * user never moved), and measure each piece (with its label block) on the sheet.
  */
 function placePieces(pattern: Pattern, transforms: Record<string, PieceTransform>): PlacedPiece[] {
-  return layoutPieces(pattern.pieces, SHEET_LAYOUT).placements.map((placement) => {
-    const transform = transforms[placement.piece.id] ?? emptyTransform();
-    const local = boundsOf(placement.piece.cutPath);
+  const resolved = resolveTransforms(pattern, transforms);
+  return pattern.pieces.map((piece) => {
+    const transform = resolved[piece.id] ?? emptyTransform();
+    const local = boundsOf(piece.cutPath);
     const center = { x: local.minX + local.width / 2, y: local.minY + local.height / 2 };
     const corners = [
       { x: local.minX, y: local.minY },
@@ -164,10 +164,9 @@ function placePieces(pattern: Pattern, transforms: Record<string, PieceTransform
       { x: local.minX, y: local.maxY + LABEL_HEIGHT },
     ].map((corner) => rotatePoint(corner, transform.rotation, center));
     const rotated = boundsOf(corners);
-    const x = placement.x + transform.x;
-    const y = placement.y + transform.y;
+    const { x, y } = transform;
     return {
-      piece: placement.piece,
+      piece,
       x,
       y,
       rotation: transform.rotation,

@@ -127,4 +127,16 @@ describe("Claude photo analyzer", () => {
     });
     expect(result).toMatchObject({ ok: false, status: 502 });
   });
+
+  it("maps an unexpected error to a 502 instead of crashing the route", async () => {
+    const parse = async () => {
+      throw new TypeError("boom");
+    };
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const result = await createClaudePhotoAnalyzer(fakeClient(parse))({
+      data: "AAAA",
+      mediaType: "image/png",
+    });
+    expect(result).toMatchObject({ ok: false, status: 502 });
+  });
 });

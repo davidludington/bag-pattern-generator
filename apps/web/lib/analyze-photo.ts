@@ -99,7 +99,8 @@ function describeError(error: unknown): { status: number; error: string } {
     // e.g. no credentials configured when the client was created
     return { status: 503, error: "Photo import is not configured: check ANTHROPIC_API_KEY." };
   }
-  throw error;
+  console.error("analyze-photo failed", error);
+  return { status: 502, error: "The analysis failed. Please try again." };
 }
 
 function isPhotoMediaType(value: string): value is PhotoMediaType {
@@ -134,7 +135,7 @@ export function createAnalyzePhotoHandler(getAnalyzer: () => PhotoAnalyzer) {
     try {
       analyzer = getAnalyzer();
     } catch (error) {
-      return json(describeError(error), 503);
+      return json({ error: describeError(error).error }, 503);
     }
     const result = await analyzer({ data, mediaType: file.type });
     if (!result.ok) return json({ error: result.error }, result.status);

@@ -89,7 +89,15 @@ export function observationToConfiguration(
   const depth = proportions.depth * scale;
 
   const set = (key: string, value: number | null | undefined) => {
-    if (value == null || !Number.isFinite(value) || value <= 0) return;
+    if (value == null || !Number.isFinite(value) || value <= 0) {
+      const label = TEMPLATE_DEFINITIONS[template].sections
+        .flatMap((section) => section.fields)
+        .find((field) => field.key === key)?.label;
+      assumptions.push(
+        `${label ?? key} keeps the template default of ${String(readField(defaults, key))} mm; the photo gave none.`,
+      );
+      return;
+    }
     configuration = withField(configuration, key, round(value));
   };
 
