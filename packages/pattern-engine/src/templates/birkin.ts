@@ -164,9 +164,6 @@ function flap(config: BirkinConfiguration, rules: ConstructionRules): PatternPie
     notchAt({ x: -e, y: foldY }, { x: -1, y: 0 }, undefined, "front fold"),
     notchAt({ x: width + e, y: foldY }, { x: 1, y: 0 }, undefined, "front fold"),
   ];
-  for (const x of [config.strapInsetMm, width - config.strapInsetMm]) {
-    markings.push(notchAt({ x, y: height + e }, { x: 0, y: 1 }, undefined, "strap"));
-  }
   for (const x of [config.handleInsetMm, width - config.handleInsetMm]) {
     markings.push(notchAt({ x, y: -sa }, { x: 0, y: -1 }, undefined, "handle"));
   }

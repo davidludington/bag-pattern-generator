@@ -168,11 +168,10 @@ describe("leather birkin", () => {
     expect(labels("front")).toEqual(
       expect.arrayContaining(["handle rivet", "reinforce handle anchor", "reinforce turn-lock"]),
     );
-    expect(labels("back")).toEqual(expect.arrayContaining(["reinforce sangle anchor"]));
+    expect(labels("back")).toEqual(expect.arrayContaining(["reinforce handle anchor"]));
     expect(labels("flap")).toEqual(
       expect.arrayContaining(["turn-lock hole", "reinforce flap fold"]),
     );
-    expect(labels("strap-1")).toContain("turn-lock slot");
   });
 
   it("still validates", () => {

@@ -12,3 +12,4 @@ export { generateDrawstringPattern } from "./templates/drawstring";
 export { generateBirkinPattern } from "./templates/birkin";
 export * from "./reconstruction";
 export * from "./construction";
+export * from "./assembly";

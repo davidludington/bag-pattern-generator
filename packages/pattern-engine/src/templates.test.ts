@@ -192,11 +192,11 @@ describe("drawstring", () => {
 });
 
 describe("birkin", () => {
-  it("builds the five-panel body, flap, sangles, and rolled handles (fabric)", () => {
+  it("builds the five-panel body, flap, and rolled handles (fabric)", () => {
     const pattern = generateBirkinPattern(
       birkinConfig({ material: "canvas", seamAllowanceMm: 10 }),
     );
-    expect(pattern.pieces).toHaveLength(12);
+    expect(pattern.pieces).toHaveLength(10);
     const flap = piece(pattern, "flap");
     expect(flap.finishedSize).toEqual({ width: 300, height: 280 });
     expect(cutSize(flap)).toEqual({ width: 320, height: 300 });
@@ -212,14 +212,10 @@ describe("birkin", () => {
     expectNoOverlap(pattern);
   });
 
-  it("rejects a radius or strap that does not fit", () => {
+  it("rejects a radius that does not fit", () => {
     expect(bagConfigurationSchema.safeParse(birkinConfig({ flapRadiusMm: 200 })).success).toBe(
       false,
     );
-    expect(
-      bagConfigurationSchema.safeParse(birkinConfig({ strapInsetMm: 200, strapWidthMm: 30 }))
-        .success,
-    ).toBe(false);
   });
 
   it("rejects a flap that hangs below the bag", () => {
