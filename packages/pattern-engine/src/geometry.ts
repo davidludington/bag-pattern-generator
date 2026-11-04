@@ -167,21 +167,6 @@ export function distance(a: Point, b: Point): number {
   return Math.hypot(b.x - a.x, b.y - a.y);
 }
 
-export function polylineLength(points: Point[], close = false): number {
-  let total = 0;
-  for (let i = 1; i < points.length; i += 1) {
-    const prev = points[i - 1];
-    const current = points[i];
-    if (prev && current) total += distance(prev, current);
-  }
-  if (close && points.length > 2) {
-    const first = points[0];
-    const last = points[points.length - 1];
-    if (first && last) total += distance(last, first);
-  }
-  return total;
-}
-
 export function polygonArea(points: Point[]): number {
   let sum = 0;
   for (let i = 0; i < points.length; i += 1) {

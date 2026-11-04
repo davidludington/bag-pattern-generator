@@ -1,8 +1,10 @@
-import { defaultConfiguration, withField } from "@bag-patterns/pattern-engine";
+import { defaultConfiguration, generatePattern, withField } from "@bag-patterns/pattern-engine";
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   createLocalProjectStore,
+  LEGACY_STORAGE_KEY,
   pruneWorkspace,
+  resolveTransforms,
   STORAGE_KEY,
   type ProjectStore,
 } from "./projects";
@@ -108,6 +110,45 @@ describe("local project store", () => {
     });
     // a malformed workspace falls back to empty rather than losing the project
     expect(project?.workspace).toEqual({});
+  });
+
+  it("converts v1 layout offsets into absolute placements", async () => {
+    const configuration = defaultConfiguration("tote");
+    storage.setItem(
+      LEGACY_STORAGE_KEY,
+      JSON.stringify([
+        {
+          id: "v1",
+          name: "Tote",
+          configuration,
+          workspace: { bottom: { x: 10, y: -20, rotation: 90 } },
+          createdAt: "2026-01-01T00:00:00.000Z",
+          updatedAt: "2026-01-01T00:00:00.000Z",
+        },
+      ]),
+    );
+
+    const auto = resolveTransforms(generatePattern(configuration), {}).bottom;
+    if (!auto) throw new Error("no bottom");
+    const [project] = await projects.list();
+    expect(project?.id).toBe("v1");
+    expect(project?.workspace.bottom).toEqual({ x: auto.x + 10, y: auto.y - 20, rotation: 90 });
+    // migrated once: the v1 key is not read again
+    expect(await projects.list()).toHaveLength(1);
+  });
+});
+
+describe("resolveTransforms", () => {
+  it("keeps a placed piece where the user put it when the configuration changes", () => {
+    const placed = { bottom: { x: 500, y: 600, rotation: 0 } };
+    const narrow = generatePattern(defaultConfiguration("tote"));
+    const wide = generatePattern({ ...defaultConfiguration("tote"), widthMm: 400 });
+    expect(resolveTransforms(narrow, placed).bottom).toEqual(placed.bottom);
+    expect(resolveTransforms(wide, placed).bottom).toEqual(placed.bottom);
+    // unplaced pieces follow the automatic layout
+    expect(resolveTransforms(wide, placed).back).not.toEqual(
+      resolveTransforms(narrow, placed).back,
+    );
   });
 });
 

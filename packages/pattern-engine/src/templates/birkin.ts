@@ -17,7 +17,7 @@ import {
 import type { ConfigurationFor } from "../schema";
 import type { Component, Marking, Pattern, PatternPiece } from "../types";
 import { assertValidPattern } from "../validation";
-import { rectPiece } from "./shared";
+import { BOX_BODY_EDGES, rectPiece } from "./shared";
 
 type BirkinConfiguration = ConfigurationFor<"birkin">;
 
@@ -32,10 +32,8 @@ const HARDWARE = {
 };
 
 /**
- * Five-panel box body (front, back, base, two gussets) plus a flap sewn to the
- * back top edge. Seam pairs follow the tote: front/back sides to the gusset
- * verticals, front/back bottoms to the base long edges, gusset bottoms to the
- * base short edges, and the back top to the flap.
+ * Five-panel box body (front, back, base, two gussets; seams follow
+ * BOX_BODY_EDGES) plus a flap sewn to the back top edge.
  *
  * In leather the flap gains a wrap allowance for bending over the front panel,
  * the rolled handle is shortened to its neutral axis, and hardware positions
@@ -80,12 +78,7 @@ export function generateBirkinPattern(config: BirkinConfiguration): Pattern {
         width,
         height,
         "body",
-        {
-          top: { kind: "raw" },
-          right: { kind: "sew", seamId: "right-front" },
-          bottom: { kind: "sew", seamId: "bottom-front" },
-          left: { kind: "sew", seamId: "left-front" },
-        },
+        BOX_BODY_EDGES.front,
         rules.leather ? [...handleAnchors(config), ...turnLockBase(config)] : [],
       ),
       panel(
@@ -94,44 +87,15 @@ export function generateBirkinPattern(config: BirkinConfiguration): Pattern {
         width,
         height,
         "body",
-        {
-          top: { kind: "sew", seamId: "back-flap" },
-          right: { kind: "sew", seamId: "right-back" },
-          bottom: { kind: "sew", seamId: "bottom-back" },
-          left: { kind: "sew", seamId: "left-back" },
-        },
-        rules.leather ? [...handleAnchors(config), ...sangleAnchors(config)] : [],
+        { ...BOX_BODY_EDGES.back, top: { kind: "sew", seamId: "back-flap" } },
+        rules.leather ? [...handleAnchors(config)] : [],
       ),
-      panel(
-        "base",
-        "Base",
-        width,
-        depth,
-        "base",
-        {
-          top: { kind: "sew", seamId: "bottom-front" },
-          right: { kind: "sew", seamId: "bottom-right" },
-          bottom: { kind: "sew", seamId: "bottom-back" },
-          left: { kind: "sew", seamId: "bottom-left" },
-        },
-        [],
-        "horizontal",
-      ),
-      panel("gusset-left", "Gusset left", depth, height, "gusset", {
-        top: { kind: "raw" },
-        right: { kind: "sew", seamId: "left-back" },
-        bottom: { kind: "sew", seamId: "bottom-left" },
-        left: { kind: "sew", seamId: "left-front" },
-      }),
-      panel("gusset-right", "Gusset right", depth, height, "gusset", {
-        top: { kind: "raw" },
-        right: { kind: "sew", seamId: "right-back" },
-        bottom: { kind: "sew", seamId: "bottom-right" },
-        left: { kind: "sew", seamId: "right-front" },
-      }),
+      panel("base", "Base", width, depth, "base", BOX_BODY_EDGES.base, [], "horizontal"),
+      panel("gusset-left", "Gusset left", depth, height, "gusset", BOX_BODY_EDGES.gussetLeft),
+      panel("gusset-right", "Gusset right", depth, height, "gusset", BOX_BODY_EDGES.gussetRight),
       flap(config, rules),
-      sangle("strap-1", "Strap 1", config, rules),
-      sangle("strap-2", "Strap 2", config, rules),
+      // sangle("strap-1", "Strap 1", config, rules),
+      // sangle("strap-2", "Strap 2", config, rules),
       wrap("handle-1", "Handle 1", config, rules),
       core("handle-1-core", "Handle 1 core", config, rules),
       wrap("handle-2", "Handle 2", config, rules),
@@ -152,18 +116,18 @@ function handleAnchors(config: BirkinConfiguration): Marking[] {
 }
 
 /** Sangles start at the back top edge. */
-function sangleAnchors(config: BirkinConfiguration): Marking[] {
-  const centre = config.strapInsetMm + config.strapWidthMm / 2;
-  return [centre, config.widthMm - centre].map((x) =>
-    reinforceZone(
-      x,
-      0,
-      config.strapWidthMm + 10,
-      HARDWARE.anchor.height,
-      "reinforce sangle anchor",
-    ),
-  );
-}
+// function sangleAnchors(config: BirkinConfiguration): Marking[] {
+//   const centre = config.strapInsetMm + config.strapWidthMm / 2;
+//   return [centre, config.widthMm - centre].map((x) =>
+//     reinforceZone(
+//       x,
+//       0,
+//       config.strapWidthMm + 10,
+//       HARDWARE.anchor.height,
+//       "reinforce sangle anchor",
+//     ),
+//   );
+// }
 
 /** The turn-lock base sits on the front, just above where the flap tip lands. */
 function turnLockBase(config: BirkinConfiguration): Marking[] {
@@ -200,9 +164,6 @@ function flap(config: BirkinConfiguration, rules: ConstructionRules): PatternPie
     notchAt({ x: -e, y: foldY }, { x: -1, y: 0 }, undefined, "front fold"),
     notchAt({ x: width + e, y: foldY }, { x: 1, y: 0 }, undefined, "front fold"),
   ];
-  for (const x of [config.strapInsetMm, width - config.strapInsetMm]) {
-    markings.push(notchAt({ x, y: height + e }, { x: 0, y: 1 }, undefined, "strap"));
-  }
   for (const x of [config.handleInsetMm, width - config.handleInsetMm]) {
     markings.push(notchAt({ x, y: -sa }, { x: 0, y: -1 }, undefined, "handle"));
   }
@@ -262,42 +223,42 @@ function flap(config: BirkinConfiguration, rules: ConstructionRules): PatternPie
   return applyConstruction(piece, "flap", rules);
 }
 
-function sangle(
-  id: string,
-  name: string,
-  config: BirkinConfiguration,
-  rules: ConstructionRules,
-): PatternPiece {
-  const e = rules.allowanceFor("raw");
-  const width = config.strapLengthMm;
-  const height = config.strapWidthMm;
-  return rectPiece({
-    id,
-    name,
-    width,
-    height,
-    material: config.material,
-    component: "strap",
-    rules,
-    edges: {},
-    grainline: "horizontal",
-    extraNotches: [
-      notchForSide("left", width, height, e, undefined, "back top"),
-      notchForSide("right", width, height, e, undefined, "turn-lock"),
-      ...(rules.leather
-        ? [
-            punch(
-              width - HARDWARE.lockAboveTipMm,
-              height / 2,
-              HARDWARE.lockHoleMm,
-              "turn-lock slot",
-            ),
-          ]
-        : []),
-    ],
-    notes: `runs from the back top, over the flap, to the turn-lock; inset ${config.strapInsetMm} mm from the side edge`,
-  });
-}
+// function sangle(
+//   id: string,
+//   name: string,
+//   config: BirkinConfiguration,
+//   rules: ConstructionRules,
+// ): PatternPiece {
+//   const e = rules.allowanceFor("raw");
+//   const width = config.strapLengthMm;
+//   const height = config.strapWidthMm;
+//   return rectPiece({
+//     id,
+//     name,
+//     width,
+//     height,
+//     material: config.material,
+//     component: "strap",
+//     rules,
+//     edges: {},
+//     grainline: "horizontal",
+//     extraNotches: [
+//       notchForSide("left", width, height, e, undefined, "back top"),
+//       notchForSide("right", width, height, e, undefined, "turn-lock"),
+//       ...(rules.leather
+//         ? [
+//           punch(
+//             width - HARDWARE.lockAboveTipMm,
+//             height / 2,
+//             HARDWARE.lockHoleMm,
+//             "turn-lock slot",
+//           ),
+//         ]
+//         : []),
+//     ],
+//     notes: `runs from the back top, over the flap, to the turn-lock; inset ${config.strapInsetMm} mm from the side edge`,
+//   });
+// }
 
 /**
  * The wrap rolls into a tube around the core. Its finished height is the tube

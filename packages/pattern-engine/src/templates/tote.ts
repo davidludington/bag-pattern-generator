@@ -3,7 +3,7 @@ import { notchForSide } from "../geometry";
 import type { ConfigurationFor } from "../schema";
 import type { Pattern, PatternPiece } from "../types";
 import { assertValidPattern } from "../validation";
-import { rectPiece } from "./shared";
+import { BOX_BODY_EDGES, rectPiece } from "./shared";
 
 type ToteConfiguration = ConfigurationFor<"tote">;
 
@@ -26,10 +26,7 @@ function pocketSize(
  * the seam allowance on seamed edges and the material's exposed-edge allowance
  * (hem for fabric, none or a turn-in for leather) on the opening and straps.
  *
- * Seam pairs:
- *   front/back sides  -> left/right gusset vertical edges
- *   front/back bottom -> bottom panel front/back edges
- *   gusset bottoms    -> bottom panel left/right edges
+ * Seams follow BOX_BODY_EDGES.
  */
 export function generateTotePattern(config: ToteConfiguration): Pattern {
   const rules = constructionRules(config);
@@ -45,12 +42,7 @@ export function generateTotePattern(config: ToteConfiguration): Pattern {
     material: config.material,
     rules,
     component: "body",
-    edges: {
-      top: { kind: "raw" },
-      right: { kind: "sew", seamId: "right-front" },
-      bottom: { kind: "sew", seamId: "bottom-front" },
-      left: { kind: "sew", seamId: "left-front" },
-    },
+    edges: BOX_BODY_EDGES.front,
     grainline: "vertical",
     notes: "Top edge is the bag opening; sides and bottom are sewn.",
     extraNotches: [notchForSide("top", width, height, opening, undefined, "opening")],
@@ -64,12 +56,7 @@ export function generateTotePattern(config: ToteConfiguration): Pattern {
     material: config.material,
     rules,
     component: "body",
-    edges: {
-      top: { kind: "raw" },
-      right: { kind: "sew", seamId: "right-back" },
-      bottom: { kind: "sew", seamId: "bottom-back" },
-      left: { kind: "sew", seamId: "left-back" },
-    },
+    edges: BOX_BODY_EDGES.back,
     grainline: "vertical",
     notes: "Top edge is the bag opening; sides and bottom are sewn.",
     extraNotches: [notchForSide("top", width, height, opening, undefined, "opening")],
@@ -83,12 +70,7 @@ export function generateTotePattern(config: ToteConfiguration): Pattern {
     material: config.material,
     rules,
     component: "base",
-    edges: {
-      top: { kind: "sew", seamId: "bottom-front" },
-      right: { kind: "sew", seamId: "bottom-right" },
-      bottom: { kind: "sew", seamId: "bottom-back" },
-      left: { kind: "sew", seamId: "bottom-left" },
-    },
+    edges: BOX_BODY_EDGES.base,
     grainline: "horizontal",
     notes: "Sews to the front, back, and both side gussets.",
   });
@@ -101,12 +83,7 @@ export function generateTotePattern(config: ToteConfiguration): Pattern {
     material: config.material,
     rules,
     component: "gusset",
-    edges: {
-      top: { kind: "raw" },
-      right: { kind: "sew", seamId: "left-back" },
-      bottom: { kind: "sew", seamId: "bottom-left" },
-      left: { kind: "sew", seamId: "left-front" },
-    },
+    edges: BOX_BODY_EDGES.gussetLeft,
     grainline: "vertical",
     notes: "Links the front, back, and bottom on the left side.",
     extraNotches: [notchForSide("top", depth, height, opening, undefined, "opening")],
@@ -120,12 +97,7 @@ export function generateTotePattern(config: ToteConfiguration): Pattern {
     material: config.material,
     rules,
     component: "gusset",
-    edges: {
-      top: { kind: "raw" },
-      right: { kind: "sew", seamId: "right-back" },
-      bottom: { kind: "sew", seamId: "bottom-right" },
-      left: { kind: "sew", seamId: "right-front" },
-    },
+    edges: BOX_BODY_EDGES.gussetRight,
     grainline: "vertical",
     notes: "Links the front, back, and bottom on the right side.",
     extraNotches: [notchForSide("top", depth, height, opening, undefined, "opening")],

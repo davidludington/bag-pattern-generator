@@ -4,7 +4,7 @@ import { getTemplateDefinition, type BagConfiguration } from "@bag-patterns/patt
 import Link from "next/link";
 import { useState } from "react";
 import { buildPattern } from "@/lib/build-pattern";
-import { pruneWorkspace, type PieceTransform } from "@/lib/projects";
+import { pruneWorkspace, resolveTransforms, type PieceTransform } from "@/lib/projects";
 import { renderPatternSvg } from "@/lib/svg";
 import { usePattern } from "@/lib/use-pattern";
 import { useProject } from "@/lib/use-project";
@@ -71,7 +71,11 @@ export function WorkspaceView({ id }: { id: string }) {
   };
 
   const selectedPiece = pattern?.pieces.find((piece) => piece.id === selectedId) ?? null;
-  const selectedTransform = transformFor(project.workspace, selectedId);
+  // The inspector edits the piece where it is drawn, auto-placed or not.
+  const selectedTransform = transformFor(
+    pattern ? resolveTransforms(pattern, project.workspace) : {},
+    selectedId,
+  );
 
   return (
     <div className="flex h-screen flex-col" data-testid="workspace-view">

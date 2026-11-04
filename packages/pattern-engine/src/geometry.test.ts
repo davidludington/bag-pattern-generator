@@ -4,17 +4,15 @@ import {
   offsetConvexPath,
   offsetRectPath,
   polygonArea,
-  polylineLength,
   rectEdges,
   rectPath,
   roundedRectPath,
 } from "./index";
 
 describe("geometry helpers", () => {
-  it("builds a closed rectangle path and computes its perimeter", () => {
+  it("builds a closed rectangle path", () => {
     const path = rectPath(300, 250);
     expect(path).toHaveLength(4);
-    expect(polylineLength(path, true)).toBe(1100);
     expect(polygonArea(path)).toBe(75000);
     expect(boundsOf(path)).toMatchObject({ width: 300, height: 250 });
   });

@@ -332,14 +332,14 @@ export const TEMPLATE_DEFINITIONS: Record<TemplateId, TemplateDefinition> = {
           num("flapRadiusMm", "Corner radius", 1, "flap-radius-input"),
         ],
       },
-      {
-        title: "Straps",
-        fields: [
-          num("strapWidthMm", "Width", 1, "strap-width-input"),
-          num("strapInsetMm", "Inset", 1, "strap-inset-input"),
-          num("strapLengthMm", "Length", 10, "strap-length-input"),
-        ],
-      },
+      // {
+      //   title: "Straps",
+      //   fields: [
+      //     num("strapWidthMm", "Width", 1, "strap-width-input"),
+      //     num("strapInsetMm", "Inset", 1, "strap-inset-input"),
+      //     num("strapLengthMm", "Length", 10, "strap-length-input"),
+      //   ],
+      // },
       {
         title: "Handles",
         fields: [

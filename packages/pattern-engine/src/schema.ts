@@ -124,11 +124,11 @@ export const birkinConfigurationSchema = z
     widthMm: z.number().min(50).max(1000),
     heightMm: z.number().min(50).max(1000),
     depthMm: z.number().min(10).max(500),
-    flapHeightMm: z.number().min(10).max(600),
+    flapHeightMm: z.number().min(0).max(600),
     flapRadiusMm: z.number().min(0).max(500),
-    strapWidthMm: z.number().min(10).max(100),
-    strapInsetMm: z.number().min(0).max(500),
-    strapLengthMm: z.number().min(50).max(2000),
+    // strapWidthMm: z.number().min(10).max(100),
+    // strapInsetMm: z.number().min(0).max(500),
+    // strapLengthMm: z.number().min(50).max(2000),
     handleLengthMm: z.number().min(50).max(2000),
     handleDiameterMm: z.number().min(5).max(100),
     handleCoreWidthMm: z.number().min(5).max(100),
@@ -209,13 +209,20 @@ export const bagConfigurationSchema = baseBagConfigurationSchema.superRefine(
             message: "Corner radius is too large for the flap.",
           });
         }
-        if (2 * configuration.strapInsetMm + configuration.strapWidthMm > configuration.widthMm) {
+        if (configuration.flapHeightMm > configuration.heightMm) {
           ctx.addIssue({
             code: "custom",
-            path: ["strapInsetMm"],
-            message: "Strap inset plus width must fit inside the bag width.",
+            path: ["flapHeightMm"],
+            message: "Flap height must be shorter than bag height",
           });
         }
+        // if (2 * configuration.strapInsetMm + configuration.strapWidthMm > configuration.widthMm) {
+        //   ctx.addIssue({
+        //     code: "custom",
+        //     path: ["strapInsetMm"],
+        //     message: "Strap inset plus width must fit inside the bag width.",
+        //   });
+        // }
         if (2 * configuration.handleInsetMm >= configuration.widthMm) {
           ctx.addIssue({
             code: "custom",
@@ -319,9 +326,9 @@ export function defaultConfiguration(template: TemplateId): BagConfiguration {
         depthMm: 140,
         flapHeightMm: 140,
         flapRadiusMm: 20,
-        strapWidthMm: 30,
-        strapInsetMm: 60,
-        strapLengthMm: 320,
+        // strapWidthMm: 30,
+        // strapInsetMm: 60,
+        // strapLengthMm: 320,
         handleLengthMm: 320,
         handleDiameterMm: 20,
         handleCoreWidthMm: 18,

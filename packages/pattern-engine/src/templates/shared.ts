@@ -14,6 +14,44 @@ import type { Component, Marking, PatternPiece } from "../types";
 
 const SIDES: Side[] = ["top", "right", "bottom", "left"];
 
+/**
+ * Seams of the five-panel box body (tote, Birkin): front/back sides to the
+ * gusset verticals, front/back bottoms to the base long edges, gusset bottoms
+ * to the base short edges. Top edges are the opening.
+ */
+export const BOX_BODY_EDGES = {
+  front: {
+    top: { kind: "raw" },
+    right: { kind: "sew", seamId: "right-front" },
+    bottom: { kind: "sew", seamId: "bottom-front" },
+    left: { kind: "sew", seamId: "left-front" },
+  },
+  back: {
+    top: { kind: "raw" },
+    right: { kind: "sew", seamId: "right-back" },
+    bottom: { kind: "sew", seamId: "bottom-back" },
+    left: { kind: "sew", seamId: "left-back" },
+  },
+  base: {
+    top: { kind: "sew", seamId: "bottom-front" },
+    right: { kind: "sew", seamId: "bottom-right" },
+    bottom: { kind: "sew", seamId: "bottom-back" },
+    left: { kind: "sew", seamId: "bottom-left" },
+  },
+  gussetLeft: {
+    top: { kind: "raw" },
+    right: { kind: "sew", seamId: "left-back" },
+    bottom: { kind: "sew", seamId: "bottom-left" },
+    left: { kind: "sew", seamId: "left-front" },
+  },
+  gussetRight: {
+    top: { kind: "raw" },
+    right: { kind: "sew", seamId: "right-back" },
+    bottom: { kind: "sew", seamId: "bottom-right" },
+    left: { kind: "sew", seamId: "right-front" },
+  },
+} as const satisfies Record<string, RectEdgesSpec>;
+
 export interface RectPieceOptions {
   id: string;
   name: string;

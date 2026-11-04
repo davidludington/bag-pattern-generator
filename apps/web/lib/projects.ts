@@ -1,12 +1,17 @@
 import {
   defaultConfiguration,
   defaultToteConfiguration,
+  layoutPieces,
   TEMPLATE_IDS,
   type BagConfiguration,
+  type Pattern,
   type TemplateId,
 } from "@bag-patterns/pattern-engine";
 import { z } from "zod";
+import { buildPattern } from "./build-pattern";
+import { SHEET_LAYOUT } from "./pattern-draw";
 
+/** A piece's placement on the sheet: translation of its local origin, plus rotation. */
 export interface PieceTransform {
   x: number;
   y: number;
@@ -48,7 +53,9 @@ export interface ProjectStore {
   remove(id: string): Promise<void>;
 }
 
-export const STORAGE_KEY = "bag-pattern-projects-v1";
+export const STORAGE_KEY = "bag-pattern-projects-v2";
+/** v1 stored placements as offsets from the automatic layout. */
+export const LEGACY_STORAGE_KEY = "bag-pattern-projects-v1";
 
 const transformSchema = z.object({
   x: z.number(),
@@ -127,6 +134,40 @@ export function emptyTransform(): PieceTransform {
   return { x: 0, y: 0, rotation: 0 };
 }
 
+/**
+ * Where each piece sits on the sheet: the user's placement if they moved it,
+ * otherwise the automatic layout. Placements are absolute, so editing the
+ * configuration never moves a piece the user placed.
+ */
+export function resolveTransforms(
+  pattern: Pattern,
+  workspace: Record<string, PieceTransform>,
+): Record<string, PieceTransform> {
+  return Object.fromEntries(
+    layoutPieces(pattern.pieces, SHEET_LAYOUT).placements.map(({ piece, x, y }) => [
+      piece.id,
+      workspace[piece.id] ?? { x, y, rotation: 0 },
+    ]),
+  );
+}
+
+/** Turn a v1 record's layout offsets into absolute placements. */
+function migrateLegacyRecord(record: unknown): unknown {
+  const project = restoreProject(record);
+  if (!project) return record;
+  const { pattern } = buildPattern(project.configuration);
+  const auto = pattern ? resolveTransforms(pattern, {}) : {};
+  const workspace = Object.fromEntries(
+    Object.entries(project.workspace).flatMap(([id, offset]) => {
+      const base = auto[id];
+      return base
+        ? [[id, { x: base.x + offset.x, y: base.y + offset.y, rotation: offset.rotation }]]
+        : [];
+    }),
+  );
+  return { ...project, workspace };
+}
+
 function seedProjects(): Project[] {
   const bag = defaultToteConfiguration();
   const createdAt = nowIso();
@@ -167,8 +208,7 @@ export function createLocalProjectStore(
   storage: () => Storage | null = () =>
     typeof window === "undefined" ? null : window.localStorage,
 ): ProjectStore {
-  const readRaw = (): unknown[] => {
-    const raw = storage()?.getItem(STORAGE_KEY);
+  const parseRecords = (raw: string | null | undefined): unknown[] => {
     if (!raw) return [];
     try {
       const parsed: unknown = JSON.parse(raw);
@@ -180,6 +220,17 @@ export function createLocalProjectStore(
   const writeRaw = (records: unknown[]) => {
     storage()?.setItem(STORAGE_KEY, JSON.stringify(records));
   };
+  // The v1 key is left in place as a backup.
+  const migrateLegacy = () => {
+    const store = storage();
+    if (!store || store.getItem(STORAGE_KEY) !== null) return;
+    const legacy = store.getItem(LEGACY_STORAGE_KEY);
+    if (legacy !== null) writeRaw(parseRecords(legacy).map(migrateLegacyRecord));
+  };
+  const readRaw = (): unknown[] => {
+    migrateLegacy();
+    return parseRecords(storage()?.getItem(STORAGE_KEY));
+  };
   const idOf = (record: unknown) =>
     record && typeof record === "object" && "id" in record ? record.id : undefined;
   const readAll = () =>
@@ -189,6 +240,7 @@ export function createLocalProjectStore(
 
   return {
     async list() {
+      migrateLegacy();
       const store = storage();
       if (store && store.getItem(STORAGE_KEY) === null) writeRaw(seedProjects());
       return readAll().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));

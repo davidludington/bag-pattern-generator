@@ -6,6 +6,7 @@ import {
 } from "@bag-patterns/pattern-engine";
 import { describe, expect, it } from "vitest";
 import { SHEET_LAYOUT, wrapText } from "./pattern-draw";
+import { resolveTransforms } from "./projects";
 import { renderPatternSvg } from "./svg";
 
 function sheetSize(svg: string): { width: number; height: number } {
@@ -51,7 +52,13 @@ describe("renderPatternSvg", () => {
   it("keeps workspace moves and grows the sheet to fit them", () => {
     const base = renderPatternSvg(tote);
     const moved = renderPatternSvg(tote, { front: { x: 2000, y: 0, rotation: 0 } });
-    expect(pieceTranslate(moved, "front").x - pieceTranslate(base, "front").x).toBeCloseTo(2000, 1);
+    const back = resolveTransforms(tote, {}).back;
+    if (!back) throw new Error("no back");
+    // front sits at its absolute placement; back keeps the automatic layout
+    expect(pieceTranslate(moved, "front").x - pieceTranslate(moved, "back").x).toBeCloseTo(
+      2000 - back.x,
+      1,
+    );
     expect(sheetSize(moved).width).toBeGreaterThan(sheetSize(base).width);
   });
 

@@ -32,9 +32,9 @@ class Birkin:
     depth: float
     flap_height: float
     flap_radius: float = 20.0
-    strap_width: float = 30.0
-    strap_inset: float = 60.0
-    strap_length: float = 320.0
+    # strap_width: float = 30.0
+    # strap_inset: float = 60.0
+    # strap_length: float = 320.0
     handle_length: float = 320.0
     handle_diameter: float = 20.0
     handle_core_width: float = 18.0
@@ -44,8 +44,14 @@ class Birkin:
 
     def __post_init__(self) -> None:
         positive = (
-            "width", "height", "depth", "flap_height", "strap_width",
-            "strap_length", "handle_length", "handle_diameter",
+            "width",
+            "height",
+            "depth",
+            "flap_height",
+            "strap_width",
+            "strap_length",
+            "handle_length",
+            "handle_diameter",
             "handle_core_width",
         )
         for field in positive:
@@ -58,8 +64,8 @@ class Birkin:
             raise ValueError("seam_allowance must be >= 0")
         if self.flap_radius > min(self.width, self.depth + self.flap_height) / 2:
             raise ValueError("flap_radius too large for the flap")
-        if 2 * self.strap_inset + self.strap_width > self.width:
-            raise ValueError("strap_inset + strap_width too large for width")
+        # if 2 * self.strap_inset + self.strap_width > self.width:
+        #     raise ValueError("strap_inset + strap_width too large for width")
         if 2 * self.handle_inset >= self.width:
             raise ValueError("handle_inset too large for width")
 
@@ -221,8 +227,18 @@ SPEC = GeneratorSpec(
             "Bag",
             (
                 Field("width", "Width", 300, affects=("front", "back", "base", "flap")),
-                Field("height", "Height", 240, affects=("front", "back", "gusset-left", "gusset-right")),
-                Field("depth", "Depth", 140, affects=("base", "gusset-left", "gusset-right", "flap")),
+                Field(
+                    "height",
+                    "Height",
+                    240,
+                    affects=("front", "back", "gusset-left", "gusset-right"),
+                ),
+                Field(
+                    "depth",
+                    "Depth",
+                    140,
+                    affects=("base", "gusset-left", "gusset-right", "flap"),
+                ),
             ),
         ),
         Section(
@@ -232,23 +248,40 @@ SPEC = GeneratorSpec(
                 Field("flap_radius", "Corner radius", 20, min=0, affects=("flap",)),
             ),
         ),
-        Section(
-            "Straps",
-            (
-                Field("strap_width", "Width", 30, affects=("strap-1", "strap-2")),
-                Field("strap_inset", "Inset", 60, min=0, affects=("strap-1", "strap-2")),
-                Field("strap_length", "Length", 320, affects=("strap-1", "strap-2")),
-            ),
-        ),
+        # Section(
+        #     "Straps",
+        #     (
+        #         Field("strap_width", "Width", 30, affects=("strap-1", "strap-2")),
+        #         Field("strap_inset", "Inset", 60, min=0, affects=("strap-1", "strap-2")),
+        #         Field("strap_length", "Length", 320, affects=("strap-1", "strap-2")),
+        #     ),
+        # ),
         Section(
             "Handles",
             (
-                Field("handle_length", "Length", 320, affects=(
-                    "handle-1-wrap", "handle-1-core", "handle-2-wrap", "handle-2-core")),
-                Field("handle_diameter", "Tube diameter", 20, affects=(
-                    "handle-1-wrap", "handle-2-wrap")),
-                Field("handle_core_width", "Core width", 18, affects=(
-                    "handle-1-core", "handle-2-core")),
+                Field(
+                    "handle_length",
+                    "Length",
+                    320,
+                    affects=(
+                        "handle-1-wrap",
+                        "handle-1-core",
+                        "handle-2-wrap",
+                        "handle-2-core",
+                    ),
+                ),
+                Field(
+                    "handle_diameter",
+                    "Tube diameter",
+                    20,
+                    affects=("handle-1-wrap", "handle-2-wrap"),
+                ),
+                Field(
+                    "handle_core_width",
+                    "Core width",
+                    18,
+                    affects=("handle-1-core", "handle-2-core"),
+                ),
                 Field("handle_inset", "Inset", 60, min=0, affects=("flap",)),
             ),
         ),
@@ -260,9 +293,9 @@ SPEC = GeneratorSpec(
             depth=params["depth"],
             flap_height=params["flap_height"],
             flap_radius=params["flap_radius"],
-            strap_width=params["strap_width"],
-            strap_inset=params["strap_inset"],
-            strap_length=params["strap_length"],
+            # strap_width=params["strap_width"],
+            # strap_inset=params["strap_inset"],
+            # strap_length=params["strap_length"],
             handle_length=params["handle_length"],
             handle_diameter=params["handle_diameter"],
             handle_core_width=params["handle_core_width"],

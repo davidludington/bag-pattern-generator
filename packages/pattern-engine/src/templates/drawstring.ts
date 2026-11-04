@@ -50,6 +50,16 @@ function panel(id: string, name: string, config: DrawstringConfiguration): Patte
         ],
         closed: false,
       },
+      // side and bottom seams
+      {
+        points: [
+          { x: 0, y: 0 },
+          { x: 0, y: cutHeight },
+          { x: width, y: cutHeight },
+          { x: width, y: 0 },
+        ],
+        closed: false,
+      },
     ],
     foldPaths: [
       {
