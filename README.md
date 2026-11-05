@@ -265,3 +265,14 @@ been removed.
 All legacy dimensions are finished millimeters; generators add seam allowance
 on top. See `src/generators/` for the tote, zip pouch, boxed pouch, tapered
 tote, drawstring, and Birkin generators.
+
+## Cloud storage (Supabase)
+
+Signed-out visitors edit in localStorage. Signing in with Google moves their projects to Supabase and unlocks SVG export.
+
+1. Create a free Supabase project and run `supabase/schema.sql` in the SQL editor.
+2. Create a Google OAuth client and add its ID/secret under Supabase > Authentication > Providers > Google.
+3. Under Authentication > URL configuration, allow `http://localhost:3000/auth/callback` and `https://<your-app>.vercel.app/auth/callback`.
+4. Set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` and `PHOTO_ALLOWED_EMAIL` (see `apps/web/.env.example`) in `apps/web/.env.local` and in Vercel.
+
+Without the Supabase variables the app runs local-only. Photo import also needs `PHOTO_IMPORT_ENABLED=true`, and in production only `PHOTO_ALLOWED_EMAIL` can use it.
