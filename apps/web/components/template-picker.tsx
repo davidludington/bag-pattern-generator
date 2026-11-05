@@ -10,7 +10,7 @@ import { TextField } from "./form-fields";
 import { Button, buttonVariants } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
-export function TemplatePicker() {
+export function TemplatePicker({ photoImport }: { photoImport: boolean }) {
   const router = useRouter();
   const [name, setName] = useState("My Project");
 
@@ -27,7 +27,7 @@ export function TemplatePicker() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-4xl px-6 py-8">
           <Link
-            href="/"
+            href="/projects"
             className="text-xs font-medium uppercase tracking-widest text-stone-500 hover:text-stone-800"
           >
             ← Projects
@@ -52,23 +52,25 @@ export function TemplatePicker() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="flex flex-wrap items-center justify-between gap-4 pt-6">
-            <div>
-              <p className="text-sm font-medium text-stone-900">Start from a photo</p>
-              <p className="text-sm text-stone-600">
-                Upload a bag photo; Claude picks the template and proportions for you to confirm.
-              </p>
-            </div>
-            <Link
-              href="/projects/new/photo"
-              data-testid="start-from-photo"
-              className={cn(buttonVariants({ variant: "outline" }))}
-            >
-              Use a photo
-            </Link>
-          </CardContent>
-        </Card>
+        {photoImport && (
+          <Card>
+            <CardContent className="flex flex-wrap items-center justify-between gap-4 pt-6">
+              <div>
+                <p className="text-sm font-medium text-stone-900">Start from a photo</p>
+                <p className="text-sm text-stone-600">
+                  Upload a bag photo; Claude picks the template and proportions for you to confirm.
+                </p>
+              </div>
+              <Link
+                href="/projects/new/photo"
+                data-testid="start-from-photo"
+                className={cn(buttonVariants({ variant: "outline" }))}
+              >
+                Use a photo
+              </Link>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid gap-4 sm:grid-cols-2">
           {TEMPLATE_LIST.map((template) => (
@@ -89,7 +91,10 @@ export function TemplatePicker() {
           ))}
         </div>
 
-        <Link href="/" className={cn(buttonVariants({ variant: "outline" }), "inline-flex")}>
+        <Link
+          href="/projects"
+          className={cn(buttonVariants({ variant: "outline" }), "inline-flex")}
+        >
           Cancel
         </Link>
       </main>

@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 
 test("create, configure, edit, and export a tote pattern", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/projects");
 
   await page.getByTestId("new-project").click();
   await page.getByTestId("project-name-input").fill("E2E Tote");
@@ -57,7 +57,7 @@ test("create, configure, edit, and export a tote pattern", async ({ page }) => {
 });
 
 test("create and export a drawstring pattern", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/projects");
 
   await page.getByTestId("new-project").click();
   await page.getByTestId("project-name-input").fill("E2E Drawstring");
@@ -125,4 +125,17 @@ test("switch a tote to leather and fold its edges", async ({ page }) => {
 
   await page.getByTestId("leather-body-input").fill("1.4");
   await expect(front.getByText(/1\.4 mm leather/)).toBeVisible();
+});
+
+test("shows the tote in 3D", async ({ page }) => {
+  await page.goto("/projects");
+  await page.getByTestId("new-project").click();
+  await page.getByTestId("project-name-input").fill("E2E 3D");
+  await page.getByTestId("create-tote").click();
+  await page.getByTestId("open-workspace").click();
+
+  await page.getByTestId("toggle-view").click();
+  await expect(page.getByTestId("bag-viewer-3d").locator("canvas")).toBeVisible();
+  await page.getByTestId("toggle-view").click();
+  await expect(page.getByTestId("pattern-canvas")).toBeVisible();
 });

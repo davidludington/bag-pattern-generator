@@ -1,11 +1,27 @@
-import { constructionRules } from "../construction";
-import { notchForSide } from "../geometry";
+import { constructionRules, punch, reinforceZone } from "../construction";
+import { notchAt, notchForSide } from "../geometry";
 import type { ConfigurationFor } from "../schema";
 import type { Pattern, PatternPiece } from "../types";
 import { assertValidPattern } from "../validation";
-import { BOX_BODY_EDGES, rectPiece } from "./shared";
+import { BOX_BODY_EDGES, coreWidthFor, rectPiece, rolledHandlePieces } from "./shared";
 
 type ToteConfiguration = ConfigurationFor<"tote">;
+
+/** Leather straps are riveted: anchor zone and rivet position on each end. */
+const ANCHOR = { width: 30, height: 40, rivetFromEdge: 15, rivetMm: 3 };
+
+/** Strap ends attach at the notches, `strapInsetMm` in from each side edge. */
+function strapAnchorMarkings(config: ToteConfiguration, leather: boolean, topAllowance: number) {
+  return [config.strapInsetMm, config.widthMm - config.strapInsetMm].flatMap((x) => [
+    notchAt({ x, y: -topAllowance }, { x: 0, y: -1 }, undefined, "strap"),
+    ...(leather
+      ? [
+          reinforceZone(x, 0, ANCHOR.width, ANCHOR.height, "reinforce strap anchor"),
+          punch(x, ANCHOR.rivetFromEdge, ANCHOR.rivetMm, "strap rivet"),
+        ]
+      : []),
+  ]);
+}
 
 function pocketSize(
   config: ToteConfiguration,
@@ -45,7 +61,10 @@ export function generateTotePattern(config: ToteConfiguration): Pattern {
     edges: BOX_BODY_EDGES.front,
     grainline: "vertical",
     notes: "Top edge is the bag opening; sides and bottom are sewn.",
-    extraNotches: [notchForSide("top", width, height, opening, undefined, "opening")],
+    extraNotches: [
+      notchForSide("top", width, height, opening, undefined, "opening"),
+      ...strapAnchorMarkings(config, rules.leather, opening),
+    ],
   });
 
   const back = rectPiece({
@@ -59,7 +78,10 @@ export function generateTotePattern(config: ToteConfiguration): Pattern {
     edges: BOX_BODY_EDGES.back,
     grainline: "vertical",
     notes: "Top edge is the bag opening; sides and bottom are sewn.",
-    extraNotches: [notchForSide("top", width, height, opening, undefined, "opening")],
+    extraNotches: [
+      notchForSide("top", width, height, opening, undefined, "opening"),
+      ...strapAnchorMarkings(config, rules.leather, opening),
+    ],
   });
 
   const bottom = rectPiece({
@@ -125,7 +147,21 @@ export function generateTotePattern(config: ToteConfiguration): Pattern {
       : "Cut 2. Fold all four edges under at the seam lines; raw edges meet at the back.",
   });
 
-  const pieces: PatternPiece[] = [front, back, bottom, leftGusset, rightGusset, strap];
+  const handles =
+    config.handleStyle === "rolled"
+      ? [1, 2].flatMap((n) =>
+          rolledHandlePieces({
+            id: `handle-${n}`,
+            name: `Handle ${n}`,
+            lengthMm: config.strapLengthMm,
+            diameterMm: config.handleDiameterMm,
+            coreWidthMm: coreWidthFor(config.handleDiameterMm),
+            material: config.material,
+            rules,
+          }),
+        )
+      : [strap];
+  const pieces: PatternPiece[] = [front, back, bottom, leftGusset, rightGusset, ...handles];
 
   if (config.interiorPocket) {
     const pocket = pocketSize(config, "interior");

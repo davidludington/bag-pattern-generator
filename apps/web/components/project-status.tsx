@@ -9,7 +9,7 @@ export function ProjectMissing() {
       <p className="mt-2 text-sm text-stone-600">
         It may have been deleted, or it was created in another browser.
       </p>
-      <Link href="/" className={cn(buttonVariants({ variant: "outline" }), "mt-6")}>
+      <Link href="/projects" className={cn(buttonVariants({ variant: "outline" }), "mt-6")}>
         Back to projects
       </Link>
     </div>

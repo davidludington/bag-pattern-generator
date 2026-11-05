@@ -128,3 +128,64 @@ export function rectPiece(options: RectPieceOptions): PatternPiece {
   };
   return applyConstruction(piece, options.component, rules);
 }
+
+/** Filler width for a rolled handle when the config has no explicit core width. */
+export const coreWidthFor = (diameterMm: number): number => Math.max(1, diameterMm - 2);
+
+export interface RolledHandleOptions {
+  id: string;
+  name: string;
+  lengthMm: number;
+  diameterMm: number;
+  coreWidthMm: number;
+  material: Material;
+  rules: ConstructionRules;
+}
+
+/**
+ * A rolled handle: the wrap rolls into a tube around a filler core. The wrap's
+ * finished height is the tube circumference; its two long edges are sewn to
+ * each other, so each carries a full seam allowance and they share one seam id.
+ * Leather bends about its mid-thickness, so the circumference is taken at
+ * diameter - thickness.
+ */
+export function rolledHandlePieces(o: RolledHandleOptions): PatternPiece[] {
+  const { id, name, lengthMm, diameterMm, rules, material } = o;
+  const thickness = rules.thicknessOf("strap") ?? 0;
+  const wrap = rectPiece({
+    id: `${id}-wrap`,
+    name: `${name} wrap`,
+    width: lengthMm,
+    height: Math.PI * (diameterMm - thickness),
+    material,
+    component: "strap",
+    rules,
+    edges: {
+      top: { kind: "sew", seamId: `${id}-tube` },
+      right: { kind: "raw" },
+      bottom: { kind: "sew", seamId: `${id}-tube` },
+      left: { kind: "raw" },
+    },
+    grainline: "horizontal",
+    notes:
+      `roll into a ${diameterMm} mm tube; join the two long edges at the stitch lines, ends taper into the top` +
+      (thickness > 0
+        ? `; circumference measured at the leather's mid-thickness (${thickness} mm leather)`
+        : ""),
+  });
+  const core = rectPiece({
+    id: `${id}-core`,
+    name: `${name} core`,
+    width: lengthMm,
+    height: o.coreWidthMm,
+    material,
+    component: "filler",
+    rules,
+    allowanceMm: 0,
+    edges: {},
+    grainline: "horizontal",
+    line: "none",
+    notes: "inner filler for the rolled handle (hidden inside the wrap); cut to size, no allowance",
+  });
+  return [wrap, core];
+}
