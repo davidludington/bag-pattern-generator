@@ -1,8 +1,9 @@
 import { TemplatePicker } from "@/components/template-picker";
-import { photoImportEnabled } from "@/lib/photo-flag";
+import { photoImportAllowed } from "@/lib/photo-flag";
+import { currentEmail } from "@/lib/supabase/server";
 
-export const dynamic = "force-dynamic"; // env flag is read per request, not baked at build
+export const dynamic = "force-dynamic";
 
-export default function NewProjectPage() {
-  return <TemplatePicker photoImport={photoImportEnabled()} />;
+export default async function NewProjectPage() {
+  return <TemplatePicker photoImport={photoImportAllowed(await currentEmail())} />;
 }

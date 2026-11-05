@@ -20,11 +20,24 @@ export function ProjectLoading() {
   return <p className="px-6 py-20 text-sm text-stone-500">Loading project…</p>;
 }
 
-export function SaveError({ message }: { message: string | null }) {
-  if (!message) return null;
-  return (
-    <p role="alert" className="text-xs text-red-700">
-      Changes could not be saved: {message}
-    </p>
-  );
+export function SaveStatus({
+  saving,
+  error,
+  onRetry,
+}: {
+  saving: boolean;
+  error: string | null;
+  onRetry: () => void;
+}) {
+  if (error) {
+    return (
+      <p role="alert" className="text-xs text-red-700">
+        Changes could not be saved: {error}{" "}
+        <button type="button" className="underline" onClick={onRetry}>
+          Retry
+        </button>
+      </p>
+    );
+  }
+  return saving ? <p className="text-xs text-stone-500">Saving…</p> : null;
 }

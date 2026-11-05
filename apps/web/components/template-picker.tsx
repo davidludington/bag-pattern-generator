@@ -4,7 +4,7 @@ import { defaultConfiguration, TEMPLATE_LIST, type TemplateId } from "@bag-patte
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { projectStore } from "@/lib/projects";
+import { useAuth } from "@/lib/auth-provider";
 import { cn } from "@/lib/utils";
 import { TextField } from "./form-fields";
 import { Button, buttonVariants } from "./ui/button";
@@ -12,10 +12,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
 export function TemplatePicker({ photoImport }: { photoImport: boolean }) {
   const router = useRouter();
+  const { store } = useAuth();
   const [name, setName] = useState("My Project");
 
   const create = async (template: TemplateId) => {
-    const project = await projectStore.create({
+    const project = await store.create({
       name,
       configuration: defaultConfiguration(template),
     });
