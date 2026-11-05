@@ -7,12 +7,12 @@ import { useProject } from "@/lib/use-project";
 import { cn } from "@/lib/utils";
 import { ConfigForm } from "./config-form";
 import { PatternCanvas } from "./pattern-canvas";
-import { ProjectLoading, ProjectMissing, SaveError } from "./project-status";
+import { ProjectLoading, ProjectMissing, SaveStatus } from "./project-status";
 import { buttonVariants } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
 export function ConfigureView({ id }: { id: string }) {
-  const { state, update, saveError } = useProject(id);
+  const { state, update, saving, saveError, retry } = useProject(id);
   const project = state.status === "ready" ? state.project : null;
   const { pattern, errors } = usePattern(project?.configuration ?? null);
 
@@ -41,7 +41,7 @@ export function ConfigureView({ id }: { id: string }) {
             <p className="text-sm text-stone-600">
               Configure the {template.label.toLowerCase()}, then open the pattern workspace.
             </p>
-            <SaveError message={saveError} />
+            <SaveStatus saving={saving} error={saveError} onRetry={retry} />
           </div>
           <Link
             href={`/projects/${project.id}/workspace`}

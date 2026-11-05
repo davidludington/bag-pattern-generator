@@ -7,6 +7,7 @@ import {
   type Pattern,
   type TemplateId,
 } from "@bag-patterns/pattern-engine";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { buildPattern } from "./build-pattern";
 import { SHEET_LAYOUT } from "./pattern-draw";
@@ -281,4 +282,78 @@ export function createLocalProjectStore(
   };
 }
 
-export const projectStore: ProjectStore = createLocalProjectStore();
+/** Row-level security scopes every query to the signed-in user. */
+export function createSupabaseProjectStore(client: SupabaseClient): ProjectStore {
+  const table = () => client.from("projects");
+  const fail = (error: { message: string } | null) => {
+    if (error) throw new Error(error.message);
+  };
+  const fromRow = (row: Record<string, unknown>) =>
+    restoreProject({
+      id: row.id,
+      name: row.name,
+      configuration: row.configuration,
+      workspace: row.workspace,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    });
+
+  return {
+    async list() {
+      const { data, error } = await table().select("*").order("updated_at", { ascending: false });
+      fail(error);
+      return (data ?? []).map(fromRow).filter((project): project is Project => project !== null);
+    },
+    async get(id) {
+      const { data, error } = await table().select("*").eq("id", id).maybeSingle();
+      fail(error);
+      return data ? fromRow(data) : null;
+    },
+    async create({ name, configuration }) {
+      const timestamp = nowIso();
+      const projectName = name.trim() || "Untitled project";
+      return this.save({
+        id: createId(),
+        name: projectName,
+        configuration,
+        workspace: {},
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      });
+    },
+    async save(project) {
+      const saved: Project = {
+        ...project,
+        configuration: { ...project.configuration, name: project.name },
+        updatedAt: nowIso(),
+      };
+      const { error } = await table().upsert({
+        id: saved.id,
+        name: saved.name,
+        configuration: saved.configuration,
+        workspace: saved.workspace,
+        created_at: saved.createdAt,
+        updated_at: saved.updatedAt,
+      });
+      fail(error);
+      return saved;
+    },
+    async remove(id) {
+      const { error } = await table().delete().eq("id", id);
+      fail(error);
+    },
+  };
+}
+
+/**
+ * Copy signed-out projects into the cloud store, then drop only the copies
+ * that went up. Stops at the first failure so nothing is lost.
+ */
+export async function uploadLocalProjects(local: ProjectStore, remote: ProjectStore) {
+  for (const project of await local.list()) {
+    await remote.save(project);
+    await local.remove(project.id);
+  }
+}
+
+export const localProjectStore: ProjectStore = createLocalProjectStore();

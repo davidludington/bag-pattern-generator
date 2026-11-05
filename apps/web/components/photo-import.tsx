@@ -9,7 +9,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { projectStore } from "@/lib/projects";
+import { useAuth } from "@/lib/auth-provider";
 import { cmToMm } from "@/lib/units";
 import { usePattern } from "@/lib/use-pattern";
 import { NumberField, TextField } from "./form-fields";
@@ -38,6 +38,7 @@ type Analysis =
  */
 export function PhotoImport() {
   const router = useRouter();
+  const { store } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<Analysis>({ status: "idle" });
@@ -84,7 +85,7 @@ export function PhotoImport() {
 
   const create = async () => {
     if (!reconstruction) return;
-    const project = await projectStore.create({
+    const project = await store.create({
       name: reconstruction.configuration.name,
       configuration: reconstruction.configuration,
     });

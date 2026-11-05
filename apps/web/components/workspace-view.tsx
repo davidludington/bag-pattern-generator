@@ -4,16 +4,18 @@ import { getTemplateDefinition, type BagConfiguration } from "@bag-patterns/patt
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useState } from "react";
+import { useAuth } from "@/lib/auth-provider";
 import { buildPattern } from "@/lib/build-pattern";
 import { pruneWorkspace, resolveTransforms, type PieceTransform } from "@/lib/projects";
 import { renderPatternSvg } from "@/lib/svg";
 import { usePattern } from "@/lib/use-pattern";
 import { useProject } from "@/lib/use-project";
 import { cn } from "@/lib/utils";
+import { AuthButton } from "./auth-button";
 import { ConfigForm } from "./config-form";
 import { Inspector, transformFor } from "./inspector";
 import { PatternCanvas } from "./pattern-canvas";
-import { ProjectLoading, ProjectMissing, SaveError } from "./project-status";
+import { ProjectLoading, ProjectMissing, SaveStatus } from "./project-status";
 import { Button, buttonVariants } from "./ui/button";
 
 const BagViewer3D = dynamic(() => import("./bag-viewer-3d").then((m) => m.BagViewer3D), {
@@ -21,7 +23,10 @@ const BagViewer3D = dynamic(() => import("./bag-viewer-3d").then((m) => m.BagVie
 });
 
 export function WorkspaceView({ id }: { id: string }) {
-  const { state, update, saveError } = useProject(id);
+  const { email, canSignIn, ready } = useAuth();
+  // Without Supabase configured there is nothing to sign in to, so nothing to gate.
+  const downloadLocked = canSignIn && !email;
+  const { state, update, saving, saveError, retry } = useProject(id);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [view, setView] = useState<"2d" | "3d">("2d");
   const project = state.status === "ready" ? state.project : null;
@@ -101,7 +106,7 @@ export function WorkspaceView({ id }: { id: string }) {
                 ? `${template.label} · ${pattern.pieces.length} pieces · millimeters`
                 : "invalid configuration"}
             </p>
-            <SaveError message={saveError} />
+            <SaveStatus saving={saving} error={saveError} onRetry={retry} />
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -119,8 +124,15 @@ export function WorkspaceView({ id }: { id: string }) {
           >
             {view === "2d" ? "3D view" : "2D pattern"}
           </Button>
-          <Button size="sm" onClick={exportSvg} disabled={!pattern} data-testid="export-svg">
-            Export SVG
+          <AuthButton />
+          <Button
+            size="sm"
+            onClick={exportSvg}
+            disabled={!pattern || !ready || downloadLocked}
+            title={downloadLocked ? "Sign in to download" : undefined}
+            data-testid="export-svg"
+          >
+            {downloadLocked ? "Sign in to export" : "Export SVG"}
           </Button>
         </div>
       </header>

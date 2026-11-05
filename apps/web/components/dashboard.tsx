@@ -3,25 +3,29 @@
 import { getTemplateDefinition } from "@bag-patterns/pattern-engine";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { projectStore, type Project } from "@/lib/projects";
+import { useAuth } from "@/lib/auth-provider";
+import { type Project } from "@/lib/projects";
 import { cn } from "@/lib/utils";
+import { AuthButton } from "./auth-button";
 import { Button, buttonVariants } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
 export function Dashboard() {
+  const { store, ready } = useAuth();
   const [projects, setProjects] = useState<Project[] | null>(null);
 
   useEffect(() => {
+    if (!ready) return;
     let active = true;
-    void projectStore.list().then((list) => active && setProjects(list));
+    void store.list().then((list) => active && setProjects(list));
     return () => {
       active = false;
     };
-  }, []);
+  }, [store, ready]);
 
   const remove = async (id: string) => {
-    await projectStore.remove(id);
-    setProjects(await projectStore.list());
+    await store.remove(id);
+    setProjects(await store.list());
   };
 
   return (
@@ -37,13 +41,16 @@ export function Dashboard() {
               Parametric bag patterns for sewing and leatherwork.
             </p>
           </div>
-          <Link
-            href="/projects/new"
-            data-testid="new-project"
-            className={cn(buttonVariants({ variant: "default" }))}
-          >
-            New project
-          </Link>
+          <div className="flex items-center gap-3">
+            <AuthButton />
+            <Link
+              href="/projects/new"
+              data-testid="new-project"
+              className={cn(buttonVariants({ variant: "default" }))}
+            >
+              New project
+            </Link>
+          </div>
         </div>
       </header>
 
