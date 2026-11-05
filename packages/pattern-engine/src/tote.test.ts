@@ -135,4 +135,23 @@ describe("bagConfigurationSchema", () => {
       }).success,
     ).toBe(false);
   });
+
+  it("marks strap anchors at the inset and rejects an inset past the centre", () => {
+    const front = piece(generateTotePattern(config({ strapInsetMm: 80 })), "front");
+    const xs = front.markings.flatMap((m) =>
+      m.kind === "notch" && m.label === "strap" ? [Math.round(m.at.x)] : [],
+    );
+    expect(xs).toEqual([80, 220]);
+    expect(bagConfigurationSchema.safeParse(config({ strapInsetMm: 150 })).success).toBe(false);
+  });
+
+  it("builds rolled handles as a wrap and a core instead of a flat strap", () => {
+    const pattern = generateTotePattern(config({ handleStyle: "rolled", handleDiameterMm: 20 }));
+    expect(pattern.pieces.map((p) => p.id)).toEqual(
+      expect.arrayContaining(["handle-1-wrap", "handle-1-core", "handle-2-wrap", "handle-2-core"]),
+    );
+    expect(pattern.pieces.some((p) => p.id === "strap")).toBe(false);
+    expect(piece(pattern, "handle-1-wrap").finishedSize.height).toBeCloseTo(Math.PI * 20, 5);
+    expect(validatePattern(pattern)).toEqual([]);
+  });
 });

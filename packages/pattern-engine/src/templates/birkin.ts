@@ -17,7 +17,7 @@ import {
 import type { ConfigurationFor } from "../schema";
 import type { Component, Marking, Pattern, PatternPiece } from "../types";
 import { assertValidPattern } from "../validation";
-import { BOX_BODY_EDGES, rectPiece } from "./shared";
+import { BOX_BODY_EDGES, rectPiece, rolledHandlePieces } from "./shared";
 
 type BirkinConfiguration = ConfigurationFor<"birkin">;
 
@@ -96,10 +96,17 @@ export function generateBirkinPattern(config: BirkinConfiguration): Pattern {
       flap(config, rules),
       // sangle("strap-1", "Strap 1", config, rules),
       // sangle("strap-2", "Strap 2", config, rules),
-      wrap("handle-1", "Handle 1", config, rules),
-      core("handle-1-core", "Handle 1 core", config, rules),
-      wrap("handle-2", "Handle 2", config, rules),
-      core("handle-2-core", "Handle 2 core", config, rules),
+      ...[1, 2].flatMap((n) =>
+        rolledHandlePieces({
+          id: `handle-${n}`,
+          name: `Handle ${n}`,
+          lengthMm: config.handleLengthMm,
+          diameterMm: config.handleDiameterMm,
+          coreWidthMm: config.handleCoreWidthMm,
+          material: config.material,
+          rules,
+        }),
+      ),
     ],
   };
   assertValidPattern(pattern);
@@ -259,62 +266,3 @@ function flap(config: BirkinConfiguration, rules: ConstructionRules): PatternPie
 //     notes: `runs from the back top, over the flap, to the turn-lock; inset ${config.strapInsetMm} mm from the side edge`,
 //   });
 // }
-
-/**
- * The wrap rolls into a tube around the core. Its finished height is the tube
- * circumference; the two long edges are sewn to each other, so each carries a
- * full seam allowance and they share one seam id. Leather bends about its
- * mid-thickness, so the circumference is taken at diameter - thickness.
- */
-function wrap(
-  id: string,
-  name: string,
-  config: BirkinConfiguration,
-  rules: ConstructionRules,
-): PatternPiece {
-  const thickness = rules.thicknessOf("strap") ?? 0;
-  const circumference = Math.PI * (config.handleDiameterMm - thickness);
-  return rectPiece({
-    id: `${id}-wrap`,
-    name: `${name} wrap`,
-    width: config.handleLengthMm,
-    height: circumference,
-    material: config.material,
-    component: "strap",
-    rules,
-    edges: {
-      top: { kind: "sew", seamId: `${id}-tube` },
-      right: { kind: "raw" },
-      bottom: { kind: "sew", seamId: `${id}-tube` },
-      left: { kind: "raw" },
-    },
-    grainline: "horizontal",
-    notes:
-      `roll into a ${config.handleDiameterMm} mm tube; join the two long edges at the stitch lines, ends taper into the top` +
-      (thickness > 0
-        ? `; circumference measured at the leather's mid-thickness (${thickness} mm leather)`
-        : ""),
-  });
-}
-
-function core(
-  id: string,
-  name: string,
-  config: BirkinConfiguration,
-  rules: ConstructionRules,
-): PatternPiece {
-  return rectPiece({
-    id,
-    name,
-    width: config.handleLengthMm,
-    height: config.handleCoreWidthMm,
-    material: config.material,
-    component: "filler",
-    rules,
-    allowanceMm: 0,
-    edges: {},
-    grainline: "horizontal",
-    line: "none",
-    notes: "inner filler for the rolled handle (hidden inside the wrap); cut to size, no allowance",
-  });
-}

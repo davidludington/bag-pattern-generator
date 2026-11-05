@@ -7,9 +7,11 @@ import {
   toteConfigurationSchema,
   zipPouchConfigurationSchema,
   EDGE_FINISHES,
+  HANDLE_STYLES,
   type BagConfiguration,
   type ConfigurationFor,
   type EdgeFinish,
+  type HandleStyle,
   type TemplateId,
 } from "./schema";
 import { generateBirkinPattern } from "./templates/birkin";
@@ -155,6 +157,8 @@ const mmField = (
   unit: "mm",
 });
 
+const HANDLE_STYLE_LABEL: Record<HandleStyle, string> = { flat: "Flat strap", rolled: "Rolled" };
+
 export const EDGE_FINISH_LABEL: Record<EdgeFinish, string> = {
   painted: "Painted",
   burnished: "Burnished",
@@ -226,8 +230,18 @@ export const TEMPLATE_DEFINITIONS: Record<TemplateId, TemplateDefinition> = {
       {
         title: "Straps",
         fields: [
-          num("strapWidthMm", "Width", 1, "strap-width-input"),
+          {
+            kind: "choice",
+            key: "handleStyle",
+            label: "Style",
+            options: HANDLE_STYLES.map((value) => ({ value, label: HANDLE_STYLE_LABEL[value] })),
+            hint: "Flat uses the width; rolled uses the tube diameter.",
+            testId: "handle-style-select",
+          },
+          num("strapWidthMm", "Width (flat)", 1, "strap-width-input"),
+          num("handleDiameterMm", "Diameter (rolled)", 1, "handle-diameter-input"),
           num("strapLengthMm", "Length", 10, "strap-length-input"),
+          num("strapInsetMm", "Inset", 1, "strap-inset-input"),
         ],
       },
       {
@@ -287,7 +301,16 @@ export const TEMPLATE_DEFINITIONS: Record<TemplateId, TemplateDefinition> = {
         title: "Handles",
         fields: [
           num("handleLengthMm", "Length", 10, "handle-length-input"),
-          num("handleWidthMm", "Width", 1, "handle-width-input"),
+          {
+            kind: "choice",
+            key: "handleStyle",
+            label: "Style",
+            options: HANDLE_STYLES.map((value) => ({ value, label: HANDLE_STYLE_LABEL[value] })),
+            hint: "Flat uses the width; rolled uses the tube diameter.",
+            testId: "handle-style-select",
+          },
+          num("handleWidthMm", "Width (flat)", 1, "handle-width-input"),
+          num("handleDiameterMm", "Diameter (rolled)", 1, "handle-diameter-input"),
           num("handleInsetMm", "Placement (inset)", 1, "handle-inset-input"),
         ],
       },

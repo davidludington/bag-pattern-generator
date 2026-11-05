@@ -30,7 +30,7 @@ export function ConfigureView({ id }: { id: string }) {
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-5">
           <div>
             <Link
-              href="/"
+              href="/projects"
               className="text-xs font-medium uppercase tracking-widest text-stone-500 hover:text-stone-800"
             >
               ← Projects

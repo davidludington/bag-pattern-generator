@@ -222,10 +222,11 @@ function tote(pattern: Pattern): Assembly | null {
   place("exterior-pocket", D / 2 + thicknessOf(pattern, "exterior-pocket"));
   place("interior-pocket", -D / 2 + thicknessOf(pattern, "interior-pocket"));
 
-  // shortcut: strap ends sit 20% in from each side; the config has no inset
-  const x0 = -W / 2 + 0.2 * W;
-  const sweeps = [D / 2, -D / 2].map((z) =>
-    loop("strap", "ribbon", x0, -x0, H, z, c.strapLengthMm, c.strapWidthMm),
+  const x0 = -W / 2 + c.strapInsetMm;
+  const sweeps = [D / 2, -D / 2].map((z, i) =>
+    c.handleStyle === "rolled"
+      ? loop(`handle-${i + 1}-wrap`, "tube", x0, -x0, H, z, c.strapLengthMm, c.handleDiameterMm)
+      : loop("strap", "ribbon", x0, -x0, H, z, c.strapLengthMm, c.strapWidthMm),
   );
   return { frames, sweeps, toleranceMm: 0.01 };
 }
@@ -283,7 +284,9 @@ function taperedTote(pattern: Pattern): Assembly | null {
 
   const x0 = -top / 2 + c.handleInsetMm;
   const sweeps = [D / 2, -D / 2].map((z, i) =>
-    loop(`handle-${i + 1}`, "ribbon", x0, -x0, H, z, c.handleLengthMm, c.handleWidthMm),
+    c.handleStyle === "rolled"
+      ? loop(`handle-${i + 1}-wrap`, "tube", x0, -x0, H, z, c.handleLengthMm, c.handleDiameterMm)
+      : loop(`handle-${i + 1}`, "ribbon", x0, -x0, H, z, c.handleLengthMm, c.handleWidthMm),
   );
   return { frames, sweeps, toleranceMm: 0.01 };
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { getTemplateDefinition, type BagConfiguration } from "@bag-patterns/pattern-engine";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useState } from "react";
 import { buildPattern } from "@/lib/build-pattern";
@@ -15,9 +16,14 @@ import { PatternCanvas } from "./pattern-canvas";
 import { ProjectLoading, ProjectMissing, SaveError } from "./project-status";
 import { Button, buttonVariants } from "./ui/button";
 
+const BagViewer3D = dynamic(() => import("./bag-viewer-3d").then((m) => m.BagViewer3D), {
+  ssr: false,
+});
+
 export function WorkspaceView({ id }: { id: string }) {
   const { state, update, saveError } = useProject(id);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [view, setView] = useState<"2d" | "3d">("2d");
   const project = state.status === "ready" ? state.project : null;
   const { pattern, errors } = usePattern(project?.configuration ?? null);
 
@@ -82,7 +88,7 @@ export function WorkspaceView({ id }: { id: string }) {
       <header className="flex flex-none flex-wrap items-center justify-between gap-3 border-b border-stone-300 bg-white px-4 py-3">
         <div className="flex items-center gap-4">
           <Link
-            href="/"
+            href="/projects"
             className="text-xs font-medium uppercase tracking-widest text-stone-500 hover:text-stone-800"
           >
             ← Projects
@@ -105,6 +111,14 @@ export function WorkspaceView({ id }: { id: string }) {
           >
             Configure
           </Link>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setView(view === "2d" ? "3d" : "2d")}
+            data-testid="toggle-view"
+          >
+            {view === "2d" ? "3D view" : "2D pattern"}
+          </Button>
           <Button size="sm" onClick={exportSvg} disabled={!pattern} data-testid="export-svg">
             Export SVG
           </Button>
@@ -124,15 +138,24 @@ export function WorkspaceView({ id }: { id: string }) {
           />
         </aside>
 
-        <PatternCanvas
-          pattern={pattern}
-          mode="edit"
-          selectedId={selectedId}
-          onSelect={setSelectedId}
-          transforms={project.workspace}
-          onTransformChange={updateTransform}
-          className="min-h-[60vh] lg:min-h-0"
-        />
+        {view === "3d" ? (
+          <BagViewer3D
+            pattern={pattern}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+            className="min-h-[60vh] lg:min-h-0"
+          />
+        ) : (
+          <PatternCanvas
+            pattern={pattern}
+            mode="edit"
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+            transforms={project.workspace}
+            onTransformChange={updateTransform}
+            className="min-h-[60vh] lg:min-h-0"
+          />
+        )}
 
         <aside className="min-h-0 overflow-y-auto rounded-lg border border-stone-300 bg-white p-4">
           <Inspector

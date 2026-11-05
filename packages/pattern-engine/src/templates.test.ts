@@ -158,6 +158,22 @@ describe("tapered tote", () => {
     expectNoOverlap(pattern);
   });
 
+  it("builds rolled handles when requested", () => {
+    const pattern = generateTaperedTotePattern(
+      taperedConfig({ handleStyle: "rolled", handleDiameterMm: 20 }),
+    );
+    expect(pattern.pieces.map((p) => p.id)).toEqual([
+      "front",
+      "back",
+      "gusset",
+      "handle-1-wrap",
+      "handle-1-core",
+      "handle-2-wrap",
+      "handle-2-core",
+    ]);
+    expect(validatePattern(pattern)).toEqual([]);
+  });
+
   it("rejects a handle inset that crosses the centre", () => {
     expect(bagConfigurationSchema.safeParse(taperedConfig({ handleInsetMm: 200 })).success).toBe(
       false,

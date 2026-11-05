@@ -9,7 +9,7 @@ import { grainlineFor, makeEdge, notchAt, offsetConvexPath, polygonEdges } from 
 import type { ConfigurationFor } from "../schema";
 import type { Edge, Marking, Pattern, PatternPiece } from "../types";
 import { assertValidPattern } from "../validation";
-import { rectPiece } from "./shared";
+import { coreWidthFor, rectPiece, rolledHandlePieces } from "./shared";
 
 type TaperedToteConfiguration = ConfigurationFor<"tapered-tote">;
 
@@ -27,8 +27,19 @@ export function generateTaperedTotePattern(config: TaperedToteConfiguration): Pa
       panel("front", "Front", config, rules),
       panel("back", "Back", config, rules),
       gusset(config, rules),
-      handle("handle-1", "Handle 1", config, rules),
-      handle("handle-2", "Handle 2", config, rules),
+      ...[1, 2].flatMap((n) =>
+        config.handleStyle === "rolled"
+          ? rolledHandlePieces({
+              id: `handle-${n}`,
+              name: `Handle ${n}`,
+              lengthMm: config.handleLengthMm,
+              diameterMm: config.handleDiameterMm,
+              coreWidthMm: coreWidthFor(config.handleDiameterMm),
+              material: config.material,
+              rules,
+            })
+          : [handle(`handle-${n}`, `Handle ${n}`, config, rules)],
+      ),
     ],
   };
   assertValidPattern(pattern);

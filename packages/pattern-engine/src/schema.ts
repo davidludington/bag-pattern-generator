@@ -17,7 +17,9 @@ export type TemplateId = (typeof TEMPLATE_IDS)[number];
  * How exposed (unseamed) leather edges are finished. Painted, burnished and
  * raw edges are cut to the finished line; folded edges carry a turn-in.
  */
+export const HANDLE_STYLES = ["flat", "rolled"] as const;
 export const EDGE_FINISHES = ["painted", "burnished", "raw", "folded"] as const;
+export type HandleStyle = (typeof HANDLE_STYLES)[number];
 export type EdgeFinish = (typeof EDGE_FINISHES)[number];
 
 /**
@@ -67,6 +69,9 @@ export const toteConfigurationSchema = z
     depthMm: z.number().min(20).max(500),
     strapWidthMm: z.number().min(10).max(100),
     strapLengthMm: z.number().min(200).max(2000),
+    strapInsetMm: z.number().min(0).max(500),
+    handleStyle: z.enum(HANDLE_STYLES),
+    handleDiameterMm: z.number().min(5).max(100),
     interiorPocket: z.boolean(),
     exteriorPocket: z.boolean(),
   })
@@ -103,6 +108,8 @@ export const taperedToteConfigurationSchema = z
     handleLengthMm: z.number().min(100).max(2000),
     handleWidthMm: z.number().min(10).max(100),
     handleInsetMm: z.number().min(0).max(500),
+    handleStyle: z.enum(HANDLE_STYLES),
+    handleDiameterMm: z.number().min(5).max(100),
   })
   .strict();
 
@@ -182,6 +189,15 @@ export const bagConfigurationSchema = baseBagConfigurationSchema.superRefine(
           });
         }
         break;
+      case "tote":
+        if (2 * configuration.strapInsetMm >= configuration.widthMm) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["strapInsetMm"],
+            message: "Strap inset must be less than half the width.",
+          });
+        }
+        break;
       case "tapered-tote":
         if (2 * configuration.handleInsetMm >= configuration.topWidthMm) {
           ctx.addIssue({
@@ -255,6 +271,9 @@ export function defaultToteConfiguration(): ConfigurationFor<"tote"> {
     depthMm: 100,
     strapWidthMm: 30,
     strapLengthMm: 600,
+    strapInsetMm: 60,
+    handleStyle: "flat",
+    handleDiameterMm: 20,
     material: "canvas",
     interiorPocket: false,
     exteriorPocket: false,
@@ -301,6 +320,8 @@ export function defaultConfiguration(template: TemplateId): BagConfiguration {
         handleLengthMm: 600,
         handleWidthMm: 30,
         handleInsetMm: 60,
+        handleStyle: "flat",
+        handleDiameterMm: 20,
         material: "canvas",
         seamAllowanceMm: 10,
         ...LEATHER_DEFAULTS,
